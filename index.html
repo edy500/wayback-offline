@@ -1,0 +1,3161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WayBack - Offline Survival Assistant</title>
+  <style>
+    :root {
+      --bg: #06102b;
+      --bg2: #0d1638;
+      --card: rgba(22, 31, 73, 0.92);
+      --card-2: rgba(12, 19, 48, 0.92);
+      --border: rgba(115, 142, 255, 0.18);
+      --text: #eef3ff;
+      --muted: #aeb9da;
+      --accent-a: #66a8ff;
+      --accent-b: #6ee7b7;
+      --danger: #ff6b6b;
+      --warning: #ffcc66;
+      --ok: #7cf29a;
+      --shadow: 0 25px 80px rgba(0, 0, 0, 0.38);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(74, 138, 255, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(110, 231, 183, 0.12), transparent 20%),
+        linear-gradient(180deg, #020817 0%, #031033 100%);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      background: linear-gradient(180deg, rgba(28, 40, 94, 0.96), rgba(15, 24, 58, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 24px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #d9fff3;
+      background: rgba(110, 231, 183, 0.12);
+      border: 1px solid rgba(110, 231, 183, 0.2);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .content {
+      padding: 22px 24px 26px;
+    }
+
+    .top-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      background: rgba(7, 13, 37, 0.55);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .risk-low { color: var(--ok); }
+    .risk-medium { color: var(--warning); }
+    .risk-high { color: var(--danger); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .field-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toggle-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-inline input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    .toggle-track {
+      position: relative;
+      width: 42px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: background 0.2s ease;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e9efff;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-inline input:checked + .toggle-track {
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+      border-color: transparent;
+    }
+
+    .toggle-inline input:checked + .toggle-track::after {
+      transform: translateX(20px);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(113, 138, 230, 0.25);
+      background: #07123b;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 15px 16px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent-a);
+      box-shadow: 0 0 0 3px rgba(102, 168, 255, 0.12);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .scenario-wrap {
+      margin-top: 18px;
+    }
+
+    .scenario-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .scenario-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip-btn {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .chip-btn:hover {
+      background: rgba(255,255,255,0.09);
+      transform: translateY(-1px);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      flex: 1;
+      min-width: 220px;
+      border-radius: 18px;
+      padding: 16px 20px;
+      font-size: 18px;
+      color: #031225;
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .secondary-btn {
+      border-radius: 18px;
+      padding: 16px 20px;
+      font-size: 16px;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .danger-btn {
+      border-radius: 18px;
+      padding: 16px 20px;
+      font-size: 16px;
+      color: #fff;
+      background: linear-gradient(90deg, #c62828, #ff6b6b);
+    }
+
+    .danger-btn:hover {
+      filter: brightness(1.04);
+    }
+
+    .status {
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .guidance {
+      margin-top: 18px;
+      background: rgba(6, 11, 30, 0.58);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .guidance-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .guidance-head-title {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 700;
+      padding-top: 2px;
+    }
+
+    .orientation-conflict-card {
+      display: none;
+      margin: 14px 16px 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 107, 107, 0.45);
+      background: rgba(255, 107, 107, 0.14);
+      color: #ffdada;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .orientation-conflict-card.visible {
+      display: block;
+    }
+
+    .orientation-conflict-card strong {
+      display: block;
+      color: #ffecec;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .orientation-conflict-card span {
+      display: block;
+    }
+
+    .guidance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .response-card {
+      background: rgba(8, 16, 44, 0.92);
+      border: 1px solid rgba(115, 142, 255, 0.16);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 150px;
+    }
+
+    .response-card h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: #dce6ff;
+    }
+
+    .response-card h3.survival-clickable {
+      cursor: pointer;
+      user-select: none;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: rgba(220, 230, 255, 0.35);
+    }
+
+    .response-card h3.survival-clickable:hover {
+      text-decoration-color: rgba(220, 230, 255, 0.85);
+    }
+
+    .response-card p {
+      margin: 0;
+      color: #edf2ff;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-size: 15px;
+    }
+
+    .footer-tip {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 107, 107, 0.22);
+      background: rgba(255, 107, 107, 0.08);
+      color: #ffd9d9;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      h1 {
+        font-size: 42px;
+      }
+
+      .top-summary,
+      .grid,
+      .guidance-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .primary-btn,
+      .secondary-btn,
+      .danger-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="badge">Offline-first prototype</div>
+      <h1>WayBack</h1>
+      <p class="subtitle">Offline Survival Assistant powered by local Gemma via Ollama.</p>
+    </section>
+
+    <section class="content">
+      <div class="top-summary">
+        <div class="summary-card">
+          <div class="summary-label">Navigation hint</div>
+          <div id="directionHint" class="summary-value">Using sun data...</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Risk level</div>
+          <div id="riskLevel" class="summary-value risk-medium">MEDIUM</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <div class="field-label-row">
+            <label for="time">Time</label>
+            <label class="toggle-inline" for="timeFormatToggle">
+              <input id="timeFormatToggle" type="checkbox" />
+              <span class="toggle-track"></span>
+              <span>AM/PM</span>
+            </label>
+          </div>
+          <input id="time" type="text" value="17:30" />
+        </div>
+
+        <div class="field">
+          <label for="sun">Sun position</label>
+          <select id="sun">
+            <option value="east">east</option>
+            <option value="west" selected>west</option>
+            <option value="overhead">overhead</option>
+            <option value="not visible">not visible</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="terrain">Terrain</label>
+          <select id="terrain">
+            <option value="downhill" selected>downhill</option>
+            <option value="uphill">uphill</option>
+            <option value="flat">flat</option>
+            <option value="rocky">rocky</option>
+            <option value="dense forest">dense forest</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="battery">Battery</label>
+          <input id="battery" type="text" value="15%" />
+        </div>
+
+        <div class="field full">
+          <label for="notes">Extra notes</label>
+          <textarea id="notes" placeholder="Example: no signal, getting cold, heard water nearby, alone.">No signal</textarea>
+        </div>
+      </div>
+
+      <div class="scenario-wrap">
+        <div class="scenario-title">Quick scenarios</div>
+        <div class="scenario-buttons">
+          <button class="chip-btn" type="button" data-scenario="night">ðŸŒ™ Lost at night</button>
+          <button class="chip-btn" type="button" data-scenario="battery">ðŸ”‹ Low battery</button>
+          <button class="chip-btn" type="button" data-scenario="injured">ðŸ©¹ Injured</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="analyzeBtn" class="primary-btn" type="button">Analyze Situation</button>
+        <button id="sosBtn" class="danger-btn" type="button">Survival Basics</button>
+        <button id="demoBtn" class="secondary-btn" type="button">Demo Data</button>
+      </div>
+
+      <div id="status" class="status">Ready.</div>
+
+      <section class="guidance">
+        <div class="guidance-head">
+          <div id="guidanceHead" class="guidance-head-title">AI Guidance</div>
+        </div>
+        <div id="orientationConflictCard" class="orientation-conflict-card" hidden>
+          <strong>&#9888; Orientation uncertain</strong>
+          <span>Light/sun/shadow conflict detected.</span>
+          <span>Avoid using sun or shadow for navigation.</span>
+          <span>Rely on terrain, water flow, landmarks, and route markers instead.</span>
+        </div>
+        <div class="guidance-grid">
+          <div class="response-card">
+            <h3 id="immediateTitle">Immediate priority</h3>
+            <p id="immediateOutput">Your survival advice will appear here.</p>
+          </div>
+          <div class="response-card">
+            <h3 id="nextTitle">Next 30 minutes</h3>
+            <p id="nextOutput">Waiting for analysis.</p>
+          </div>
+          <div class="response-card">
+            <h3 id="avoidTitle">Avoid</h3>
+            <p id="avoidOutput">Waiting for analysis.</p>
+          </div>
+          <div class="response-card">
+            <h3 id="batteryTitle">Battery advice</h3>
+            <p id="batteryOutput">Waiting for analysis.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-tip">
+        To work, Ollama must be running locally with the model available.
+        Example: <strong>ollama run gemma:7b</strong>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const timeInput = document.getElementById('time');
+    const timeFormatToggle = document.getElementById('timeFormatToggle');
+    const sunInput = document.getElementById('sun');
+    const terrainInput = document.getElementById('terrain');
+    const batteryInput = document.getElementById('battery');
+    const notesInput = document.getElementById('notes');
+
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const demoBtn = document.getElementById('demoBtn');
+    const sosBtn = document.getElementById('sosBtn');
+
+    const statusEl = document.getElementById('status');
+    const directionHintEl = document.getElementById('directionHint');
+    const riskLevelEl = document.getElementById('riskLevel');
+    const guidanceHeadEl = document.getElementById('guidanceHead');
+    const orientationConflictCardEl = document.getElementById('orientationConflictCard');
+    let survivalBasicsActive = false;
+
+    const immediateOutput = document.getElementById('immediateOutput');
+    const nextOutput = document.getElementById('nextOutput');
+    const avoidOutput = document.getElementById('avoidOutput');
+    const batteryOutput = document.getElementById('batteryOutput');
+    const immediateTitleEl = document.getElementById('immediateTitle');
+    const nextTitleEl = document.getElementById('nextTitle');
+    const avoidTitleEl = document.getElementById('avoidTitle');
+    const batteryTitleEl = document.getElementById('batteryTitle');
+    const survivalBasics = {
+      water: [
+        'Water is your top priority. You can survive only a few days without it.',
+        'Use valleys and low areas as search zones, but confirm water signs before committing.',
+        'Look for green vegetation, animal tracks, and insect activity.',
+        'Collect rainwater whenever possible.',
+        'Avoid drinking stagnant or dirty water without filtering or boiling.',
+        'Clear, flowing water is safer than still water.',
+        'Do not rely on thirst. Drink regularly and conserve sweat.'
+      ],
+      shelter: [
+        'Shelter is critical against cold, heat, wind, and rain.',
+        'Prioritize shelter before nightfall.',
+        'Use natural structures: caves, fallen trees, and rock overhangs.',
+        'Avoid low ground where cold air and water collect.',
+        'Stay dry. Moisture increases hypothermia risk.',
+        'Insulate yourself from the ground using leaves or branches.',
+        'Fire provides warmth, protection, and signaling. Use it carefully.'
+      ],
+      food: [
+        'Food is not a priority in the first days. Focus on water and shelter.',
+        'Avoid unknown berries and fruits.',
+        'Avoid mushrooms. Many are highly toxic.',
+        'Avoid plants with milky or discolored sap.',
+        'Do not eat anything based only on appearance.',
+        'If unsure, do not eat.',
+        'Animals may eat things that are dangerous to humans.',
+        'Unsafe food can be more dangerous than not eating.'
+      ],
+      navigation: [
+        'Stay oriented at all times and track your direction of travel.',
+        'Use the sun: east in the morning and west in the afternoon.',
+        'At noon, the sun is overhead and less useful for direction.',
+        'Use downhill routes only when they are safer and reversible; do not assume water exists there.',
+        'Mark your path using stones, branches, or visible signs.',
+        'Avoid walking at night unless necessary.',
+        'Retrace your steps if you become uncertain.',
+        'Use landmarks such as mountains and rivers to maintain direction.'
+      ]
+    };
+
+    function renderSurvivalBasics(topic) {
+      return survivalBasics[topic].map((line, index) => `${index + 1}. ${line}`).join('\n');
+    }
+
+    function setSurvivalTitleInteractivity(enabled) {
+      [immediateTitleEl, nextTitleEl, avoidTitleEl, batteryTitleEl].forEach(el => {
+        el.classList.toggle('survival-clickable', enabled);
+      });
+    }
+
+    function setSurvivalBasicsLayout() {
+      guidanceHeadEl.textContent = 'Based on U.S. Army Survival Manual FM 3-05.70';
+      setOrientationConflictAlert(false);
+      immediateTitleEl.textContent = 'Water rules';
+      nextTitleEl.textContent = 'Shelter rules';
+      avoidTitleEl.textContent = 'Food warnings';
+      batteryTitleEl.textContent = 'Navigation basics';
+    }
+
+    function setAIGuidanceLayout() {
+      guidanceHeadEl.textContent = 'AI Guidance';
+      setOrientationConflictAlert(false);
+      immediateTitleEl.textContent = 'Immediate priority';
+      nextTitleEl.textContent = 'Next 30 minutes';
+      avoidTitleEl.textContent = 'Avoid';
+      batteryTitleEl.textContent = 'Battery advice';
+      setSurvivalTitleInteractivity(false);
+    }
+
+    function setOrientationConflictAlert(visible) {
+      orientationConflictCardEl.hidden = !visible;
+      orientationConflictCardEl.classList.toggle('visible', visible);
+    }
+
+    function clearGuidanceOutputs() {
+      immediateOutput.textContent = '';
+      nextOutput.textContent = '';
+      avoidOutput.textContent = '';
+      batteryOutput.textContent = '';
+    }
+
+    function setInitialGuidanceOutputs() {
+      immediateOutput.textContent = 'Your survival advice will appear here.';
+      nextOutput.textContent = 'Waiting for analysis.';
+      avoidOutput.textContent = 'Waiting for analysis.';
+      batteryOutput.textContent = 'Waiting for analysis.';
+    }
+
+    function showSurvivalBasics(topic) {
+      if (!survivalBasicsActive) return;
+
+      if (topic === 'water') {
+        immediateOutput.textContent = renderSurvivalBasics('water');
+        statusEl.textContent = 'Water rules loaded.';
+      }
+      if (topic === 'shelter') {
+        nextOutput.textContent = renderSurvivalBasics('shelter');
+        statusEl.textContent = 'Shelter rules loaded.';
+      }
+      if (topic === 'food') {
+        avoidOutput.textContent = renderSurvivalBasics('food');
+        statusEl.textContent = 'Food warnings loaded.';
+      }
+      if (topic === 'navigation') {
+        batteryOutput.textContent = renderSurvivalBasics('navigation');
+        statusEl.textContent = 'Navigation basics loaded.';
+      }
+    }
+
+    function getBatteryNumber(value) {
+      const match = String(value).match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    }
+
+    function parseTimeToMinutes(value) {
+      const text = String(value || '').trim().toUpperCase();
+      if (!text) return null;
+
+      const amPmMatch = /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/.exec(text);
+      if (amPmMatch) {
+        let hours = Number(amPmMatch[1]);
+        const minutes = Number(amPmMatch[2] || '0');
+        const period = amPmMatch[3];
+
+        if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) return null;
+
+        if (period === 'AM') {
+          if (hours === 12) hours = 0;
+        } else if (hours !== 12) {
+          hours += 12;
+        }
+
+        return hours * 60 + minutes;
+      }
+
+      const militaryMatch = /^(\d{1,2}):(\d{2})$/.exec(text);
+      if (!militaryMatch) return null;
+
+      const hours = Number(militaryMatch[1]);
+      const minutes = Number(militaryMatch[2]);
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+      return hours * 60 + minutes;
+    }
+
+    function formatTimeFromMinutes(totalMinutes, useAmPm) {
+      if (typeof totalMinutes !== 'number' || Number.isNaN(totalMinutes)) return '';
+
+      const minutesInDay = 24 * 60;
+      const normalized = ((totalMinutes % minutesInDay) + minutesInDay) % minutesInDay;
+      const hours24 = Math.floor(normalized / 60);
+      const minutes = normalized % 60;
+      const minuteText = String(minutes).padStart(2, '0');
+
+      if (useAmPm) {
+        const suffix = hours24 >= 12 ? 'PM' : 'AM';
+        const hours12 = (hours24 % 12) || 12;
+        return `${hours12}:${minuteText} ${suffix}`;
+      }
+
+      return `${String(hours24).padStart(2, '0')}:${minuteText}`;
+    }
+
+    function normalizeTimeInputFormat() {
+      const parsed = parseTimeToMinutes(timeInput.value);
+      if (parsed !== null) {
+        timeInput.value = formatTimeFromMinutes(parsed, timeFormatToggle.checked);
+      }
+      timeInput.placeholder = timeFormatToggle.checked ? '5:30 PM' : '17:30';
+    }
+
+    function setTimeFrom24h(value24h) {
+      const parsed = parseTimeToMinutes(value24h);
+      if (parsed === null) {
+        timeInput.value = value24h;
+        return;
+      }
+      timeInput.value = formatTimeFromMinutes(parsed, timeFormatToggle.checked);
+    }
+
+    function updateDirectionHint() {
+      const sun = sunInput.value;
+      const terrain = terrainInput.value;
+      let hint = '';
+
+      if (sun === 'east') {
+        hint = 'Sun in the east: use it as an east reference point.';
+      } else if (sun === 'west') {
+        hint = 'Sun in the west: use it as a west reference point.';
+      } else if (sun === 'overhead') {
+        hint = 'Sun overhead: no clear directional cue. Use terrain and movement history.';
+      } else {
+        hint = 'Sun not visible: rely on terrain, movement history, and caution.';
+      }
+
+      if (terrain === 'downhill') {
+        hint += ' Downhill can reduce effort in some scenarios, but only if footing is safe and your route is reversible.';
+      }
+
+      directionHintEl.textContent = hint;
+    }
+
+    function updateRiskLevel() {
+      const battery = getBatteryNumber(batteryInput.value);
+      const terrain = terrainInput.value;
+      const notes = notesInput.value.toLowerCase();
+      const timeMinutes = parseTimeToMinutes(timeInput.value);
+      const noSignal = notes.includes('no signal') || notes.includes('sem sinal');
+      const noWater =
+        hasNoWaterSignal(notes) ||
+        notes.includes('dry');
+      const lowLight =
+        notes.includes('night') ||
+        notes.includes('dark') ||
+        notes.includes('fim do dia') ||
+        notes.includes('anoitecendo') ||
+        (timeMinutes !== null && timeMinutes >= 17 * 60 + 30);
+      const rainSignal = hasRainSignal(notes);
+      const severeWeatherSignal = hasSevereWeatherSignal(notes);
+      const heatSignal = hasHeatSignal(notes);
+      const heavyClothingSignal = hasHeavyClothingSignal(notes);
+      const heatDehydrationRiskSignal = hasHeatDehydrationRiskSignal(notes);
+      const difficultTerrain =
+        terrain === 'rocky' ||
+        terrain === 'dense forest' ||
+        terrain === 'uphill' ||
+        notes.includes('steep') ||
+        notes.includes('morro') ||
+        notes.includes('difficult terrain') ||
+        notes.includes('terreno dificil') ||
+        notes.includes('terreno dificil');
+
+      let risk = 'LOW';
+      let riskClass = 'risk-low';
+
+      if (
+        battery <= 30 ||
+        difficultTerrain ||
+        notes.includes('cold') ||
+        notes.includes('alone') ||
+        noSignal ||
+        noWater ||
+        heatSignal ||
+        heavyClothingSignal ||
+        lowLight ||
+        rainSignal ||
+        severeWeatherSignal
+      ) {
+        risk = 'MEDIUM';
+        riskClass = 'risk-medium';
+      }
+
+      if (
+        battery <= 15 ||
+        notes.includes('injured') ||
+        notes.includes('bleeding') ||
+        noWater ||
+        (lowLight && difficultTerrain) ||
+        (lowLight && noSignal) ||
+        (rainSignal && difficultTerrain) ||
+        (rainSignal && lowLight) ||
+        severeWeatherSignal ||
+        heatDehydrationRiskSignal ||
+        (timeMinutes !== null && timeMinutes >= 18 * 60 + 30)
+      ) {
+        risk = 'HIGH';
+        riskClass = 'risk-high';
+      }
+
+      riskLevelEl.textContent = risk;
+      riskLevelEl.className = `summary-value ${riskClass}`;
+    }
+
+    function setScenario(type) {
+      if (type === 'night') {
+        setTimeFrom24h('19:10');
+        sunInput.value = 'not visible';
+        terrainInput.value = 'dense forest';
+        batteryInput.value = '24%';
+        notesInput.value = 'No signal. Getting cold. Alone. Night is approaching.';
+      }
+
+      if (type === 'battery') {
+        setTimeFrom24h('17:45');
+        sunInput.value = 'west';
+        terrainInput.value = 'downhill';
+        batteryInput.value = '7%';
+        notesInput.value = 'No signal. User is alone. Must preserve battery.';
+      }
+
+      if (type === 'injured') {
+        setTimeFrom24h('16:50');
+        sunInput.value = 'west';
+        terrainInput.value = 'rocky';
+        batteryInput.value = '32%';
+        notesInput.value = 'No signal. Injured ankle. Walking is painful.';
+      }
+
+      updateDirectionHint();
+      updateRiskLevel();
+      statusEl.textContent = 'Scenario loaded.';
+    }
+
+    function loadDemoData() {
+      setTimeFrom24h('17:30');
+      sunInput.value = 'west';
+      terrainInput.value = 'downhill';
+      batteryInput.value = '15%';
+      notesInput.value = 'No signal. User is alone. Temperature dropping.';
+      updateDirectionHint();
+      updateRiskLevel();
+      statusEl.textContent = 'Demo data loaded.';
+    }
+
+    function cleanText(text) {
+      return text
+        .replace(/##/g, '')
+        .replace(/\*\*/g, '')
+        .replace(/\r/g, '')
+        .trim();
+    }
+
+    function extractSection(text, heading, nextHeadingList) {
+      const safeHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!nextHeadingList || !nextHeadingList.length) {
+        const finalRegex = new RegExp(
+          `${safeHeading}\\s*:?\\s*([\\s\\S]*)$`,
+          'i'
+        );
+        const finalMatch = text.match(finalRegex);
+        return finalMatch ? finalMatch[1].trim() : '';
+      }
+      const nextPattern = nextHeadingList
+        .map(item => item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|');
+
+      const regex = new RegExp(
+        `${safeHeading}\\s*:?\\s*([\\s\\S]*?)(?=${nextPattern}|$)`,
+        'i'
+      );
+
+      const match = text.match(regex);
+      return match ? match[1].trim() : '';
+    }
+
+    function parseStructuredResponse(raw) {
+      const text = cleanText(raw);
+
+      const headings = [
+        'IMMEDIATE PRIORITY',
+        'NEXT 30 MINUTES',
+        'AVOID',
+        'BATTERY STRATEGY'
+      ];
+
+      const immediate = extractSection(text, 'IMMEDIATE PRIORITY', headings.slice(1));
+      const next = extractSection(text, 'NEXT 30 MINUTES', ['AVOID', 'BATTERY STRATEGY']);
+      const avoid = extractSection(text, 'AVOID', ['BATTERY STRATEGY']);
+      const battery = extractSection(text, 'BATTERY STRATEGY', []);
+
+      return {
+        immediate: immediate || text,
+        next: next || 'No specific guidance returned.',
+        avoid: avoid || 'No specific warnings returned.',
+        battery: battery || 'No battery strategy returned.'
+      };
+    }
+
+    function isGenericText(text) {
+      const normalized = String(text || '').toLowerCase().trim();
+      return (
+        !normalized ||
+        normalized.includes('no specific') ||
+        normalized.includes('no battery strategy returned') ||
+        normalized.includes('waiting for analysis')
+      );
+    }
+
+    function getHybridBatteryGuidance(battery) {
+      if (battery < 20) {
+        return 'CRITICAL: Emergency battery mode now. Stop non-essential phone use, keep airplane mode on, and set brightness to minimum. Do one final heading/landmark check, then keep the phone locked/off between emergency-only checks.';
+      }
+
+      if (battery > 50) {
+        return 'OPTIONAL: Normal conservation only. Keep airplane mode enabled between checks, lower screen brightness, and avoid non-essential app use.';
+      }
+
+      return 'IMPORTANT: Conserve battery now. Keep airplane mode on, reduce screen brightness, and batch essential checks. Move only when a safer route or clear landmark is available.';
+    }
+
+    function normalizeBearingDegrees(rawValue) {
+      const parsed = Number.parseInt(String(rawValue || '').trim(), 10);
+      if (!Number.isFinite(parsed) || parsed < 0 || parsed > 360) return null;
+      return parsed === 360 ? 0 : parsed;
+    }
+
+    function getCompassFromDegrees(degrees) {
+      const sectors = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+      const index = Math.round(degrees / 45) % sectors.length;
+      return sectors[index];
+    }
+
+    function getHeadingFromNotes(notes) {
+      const text = normalizeSignalText(notes);
+      const keywordMatch = text.match(/\b(?:heading|bearing|direction|azimuth|rumo|direcao)\s*(\d{1,3})\s?(?:degrees?|degree|grau|graus|deg|°)?\b/);
+      if (keywordMatch) {
+        return normalizeBearingDegrees(keywordMatch[1]);
+      }
+
+      const bareDegreesMatch = text.match(/\b(\d{1,3})\s?(?:degrees?|degree|grau|graus|deg|°)\b/);
+      if (bareDegreesMatch) {
+        return normalizeBearingDegrees(bareDegreesMatch[1]);
+      }
+
+      return null;
+    }
+
+    function getDirectionFromNotes(notes) {
+      const text = normalizeSignalText(notes);
+      const heading = getHeadingFromNotes(text);
+      if (heading !== null) {
+        return `${heading}° (${getCompassFromDegrees(heading)})`;
+      }
+
+      if (/\b(north[-\s]?east|northeast|nordeste)\b/.test(text)) return 'north-east';
+      if (/\b(south[-\s]?east|southeast|sudeste)\b/.test(text)) return 'south-east';
+      if (/\b(south[-\s]?west|southwest|sudoeste)\b/.test(text)) return 'south-west';
+      if (/\b(north[-\s]?west|northwest|noroeste)\b/.test(text)) return 'north-west';
+      if (/\b(north|norte)\b/.test(text)) return 'north';
+      if (/\b(south|sul)\b/.test(text)) return 'south';
+      if (/\b(east|leste)\b/.test(text)) return 'east';
+      if (/\b(west|oeste)\b/.test(text)) return 'west';
+      return '';
+    }
+
+    function normalizeSignalText(value) {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function hasLionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(lion|leao)\b/.test(text);
+    }
+
+    function hasPredatorSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(predator|lion|leao|bear|wolf|jaguar|onca|big cat|puma|cougar|panther|tiger|tigress|tigre|growl|rugido)\b/.test(text);
+    }
+
+    function hasNaturalSunlightSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(sunlight|sun light|sunshine|daylight|luz do sol|luz solar|luz natural|luz do dia|claridade do sol|claridade do dia|sunrise|sunset|dawn|dusk|amanhecer|entardecer|por do sol|sol forte|raios? de sol)\b/.test(text);
+    }
+
+    function hasExplicitArtificialLightSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(artificial light|electric light|street light|streetlamp|headlight|headlights|flashlight|torch light|lantern|headlamp|camp lantern|luz artificial|luz eletrica|luz de poste|luz de rua|lanterna|farol|farois)\b/.test(text);
+    }
+
+    function hasUnconfirmedLightSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasLightSourcePhrase = /\b(distant light|far light|light in the distance|light in distance|light ahead|point of light|i see a light|saw a light|vejo uma luz|vi uma luz|luz ao longe|luz distante|ponto de luz|luz a distancia|luz na distancia)\b/.test(text);
+      return hasLightSourcePhrase && !hasNaturalSunlightSignal(text) && !hasExplicitArtificialLightSignal(text);
+    }
+
+    function hasHumanActivitySignal(notes) {
+      const text = normalizeSignalText(notes);
+      return (
+        /\b(chainsaw|motosserra|helicopter|helicoptero|aircraft|plane|aviao|rescue|voices?|vozes?|hammer|martelo|engine|motor|machine|maquina|tools?|ferramentas?|smoke|fumaca|camp|cabin|house|road|estrada|human tracks|pegadas humanas)\b/.test(text) ||
+        hasExplicitArtificialLightSignal(text) ||
+        hasUnconfirmedLightSignal(text)
+      );
+    }
+
+    function getHumanActivityCue(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(chainsaw|motosserra)\b/.test(text)) return 'chainsaw sound';
+      if (/\b(helicopter|helicoptero|aircraft|plane|aviao)\b/.test(text)) return 'helicopter or aircraft signal';
+      if (/\b(rescue)\b/.test(text)) return 'direct rescue indication';
+      if (/\b(voices?|vozes?)\b/.test(text)) return 'human voices';
+      if (/\b(hammer|martelo)\b/.test(text)) return 'tool impact sounds';
+      if (/\b(engine|motor|machine|maquina)\b/.test(text)) return 'engine or machine sounds';
+      if (/\b(smoke|fumaca)\b/.test(text)) return 'smoke signal';
+      if (hasExplicitArtificialLightSignal(text)) return 'artificial light';
+      if (hasUnconfirmedLightSignal(text)) return 'light signal (source unconfirmed)';
+      if (/\b(road|estrada|camp|cabin|house)\b/.test(text)) return 'nearby human structure or route';
+      if (/\b(human tracks|pegadas humanas)\b/.test(text)) return 'human tracks';
+      return 'human activity signal';
+    }
+
+    function hasDomesticAnimalCivilizationSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasChicken = /\b(chicken|chickens|galinha|galinhas|hen|hens|rooster|roosters|frango|frangos)\b/.test(text);
+      const hasPig = /\b(pig|pigs|porco|porcos|piglet|piglets|porca|porcas|leitao|leitoes)\b/.test(text);
+      const hasLivestock = /\b(livestock|gado|rebanho|domestic animals?|animais domesticos|farm animals?|cattle|cow|cows|goat|goats|sheep|ovelha|ovelhas)\b/.test(text);
+      return hasChicken || hasPig || hasLivestock;
+    }
+
+    function getDomesticAnimalCivilizationCue(notes) {
+      const text = normalizeSignalText(notes);
+      const hasChicken = /\b(chicken|chickens|galinha|galinhas|hen|hens|rooster|roosters|frango|frangos)\b/.test(text);
+      const hasPig = /\b(pig|pigs|porco|porcos|piglet|piglets|porca|porcas|leitao|leitoes)\b/.test(text);
+      const hasLivestock = /\b(livestock|gado|rebanho|domestic animals?|animais domesticos|farm animals?|cattle|cow|cows|goat|goats|sheep|ovelha|ovelhas)\b/.test(text);
+      if (hasChicken && hasPig) return 'domestic animals (chickens and pigs)';
+      if (hasLivestock) return 'livestock signs';
+      if (hasChicken) return 'domestic chickens nearby';
+      if (hasPig) return 'domestic pigs nearby';
+      return 'domestic animal signs';
+    }
+
+    function getDefenseGearSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasFlamethrower = /\b(flamethrower|lanca chamas|lancachamas)\b/.test(text);
+      const hasBearSpray = /\b(bear spray|spray de urso|spray para urso)\b/.test(text);
+      const hasBearCapsule = /\b(bear capsule|capsula de urso|capsula anti urso)\b/.test(text);
+      const hasDefenseGear = hasFlamethrower || hasBearSpray || hasBearCapsule;
+
+      const labels = [];
+      if (hasFlamethrower) labels.push('flamethrower');
+      if (hasBearSpray) labels.push('bear spray');
+      if (hasBearCapsule) labels.push('bear capsule');
+
+      return {
+        hasDefenseGear,
+        hasFlamethrower,
+        hasBearSpray,
+        hasBearCapsule,
+        summary: hasDefenseGear ? labels.join(', ') : 'none reported'
+      };
+    }
+
+    function getAnimalSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasScorpionWord = text.includes('scorpion') || text.includes('escorpi');
+      const animalPattern = /\b(moose|elk|deer|bear|wolf|boar|animal|animals|animais|veado|urso|lobo|javali|pig|porco|pork|chicken|galinha|hen|cock|rooster|snake|cobra|onca|jaguar|lion|leao|puma|cougar|panther|tiger|tigre)\b/;
+      if (!animalPattern.test(text) && !hasScorpionWord) return 'none reported';
+      if (hasScorpionWord || /\b(snake|cobra)\b/.test(text)) return 'animals observed (high risk: possible venomous threat)';
+      if (/\b(bear|wolf|urso|lobo|onca|jaguar|lion|leao|puma|cougar|panther|tiger|tigre)\b/.test(text)) return 'animals observed (possible predator danger)';
+      if (/\b(pig|porco|pork|chicken|galinha|hen|cock|rooster|boar|javali)\b/.test(text)) return 'animals observed (possible food source and caution needed)';
+      return 'animals observed (possible water clue and caution needed)';
+    }
+
+    function hasWaterKeywordSignal(notes) {
+      const text = String(notes || '').toLowerCase();
+      return (
+        text.includes('water') ||
+        text.includes('river') ||
+        text.includes('stream') ||
+        text.includes('creek') ||
+        text.includes('lake') ||
+        text.includes('waterfall') ||
+        text.includes('cachoeira') ||
+        text.includes("queda d'agua") ||
+        text.includes('queda de agua') ||
+        text.includes('rio') ||
+        text.includes('agua') ||
+        text.includes('lago') ||
+        text.includes('fonte')
+      );
+    }
+
+    function getWaterDistanceMeters(notes) {
+      const text = String(notes || '').toLowerCase();
+      if (!hasWaterKeywordSignal(text)) return null;
+
+      const meterMatch = text.match(/\b(\d{1,4})\s?(m|meter|meters|metre|metres|metro|metros)\b/);
+      if (meterMatch) {
+        return Number.parseInt(meterMatch[1], 10);
+      }
+
+      const kmMatch = text.match(/\b(\d{1,2}(?:[.,]\d+)?)\s?(km|kilometer|kilometers|quilometro|quilometros)\b/);
+      if (kmMatch) {
+        const kmValue = Number.parseFloat(kmMatch[1].replace(',', '.'));
+        if (Number.isFinite(kmValue)) {
+          return Math.round(kmValue * 1000);
+        }
+      }
+
+      return null;
+    }
+
+    function hasAudibleWaterSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasWaterWord =
+        /\b(water|waterfall|river|stream|creek|rio|agua|cachoeira|fonte|queda de agua)\b/.test(text);
+      const hasAudioWord =
+        /\b(sound|sounds|noise|hear|heard|hearing|listen|listening|som|barulho|ruido|ouvi|ouvindo|escuto|escutando)\b/.test(text);
+      const directPattern =
+        /\b(sound of water|sound of a waterfall|waterfall sound|heard water|heard a waterfall|hearing water|som de agua|som de cachoeira|barulho de agua|barulho de cachoeira|ouvi agua|ouvi cachoeira)\b/.test(text);
+
+      return directPattern || (hasWaterWord && hasAudioWord);
+    }
+
+    function hasNearbyWaterPrioritySignal(notes) {
+      const text = String(notes || '').toLowerCase();
+      if (!hasWaterKeywordSignal(text)) return false;
+
+      const distanceMeters = getWaterDistanceMeters(text);
+      if (distanceMeters !== null && distanceMeters <= 400) return true;
+
+      return (
+        text.includes('near water') ||
+        text.includes('nearby water') ||
+        text.includes('water nearby') ||
+        text.includes('close to water') ||
+        text.includes('next to water') ||
+        text.includes('sound of water') ||
+        text.includes('sound of a waterfall') ||
+        text.includes('waterfall sound') ||
+        text.includes('heard water') ||
+        text.includes('heard waterfall') ||
+        text.includes('hearing water') ||
+        text.includes('som de agua') ||
+        text.includes('som de cachoeira') ||
+        text.includes('barulho de agua') ||
+        text.includes('barulho de cachoeira') ||
+        text.includes('ouvi agua') ||
+        text.includes('ouvi cachoeira') ||
+        text.includes('waterfall near') ||
+        text.includes('waterfall close') ||
+        text.includes('cachoeira perto') ||
+        text.includes('agua perto') ||
+        text.includes('perto da agua') ||
+        text.includes('proximo da agua') ||
+        text.includes('ao lado do rio')
+      );
+    }
+
+    function hasExplicitSpecificWaterSourceSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(river|stream|creek|lake|waterfall|rio|lago|cachoeira|queda de agua|queda dagua)\b/.test(text);
+    }
+
+    function hasExplicitWaterSourceOrSoundSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return (
+        hasExplicitSpecificWaterSourceSignal(text) ||
+        hasAudibleWaterSignal(text) ||
+        /\b(water source|source of water|spring|water spring|fonte de agua|fonte|nascente)\b/.test(text)
+      );
+    }
+
+    function sanitizeSpecificWaterSourceClaims(text) {
+      if (!text) return text;
+      return String(text)
+        .replace(/\b(river|stream|creek|lake|waterfall|rio|lago|cachoeira)\b/gi, 'water source')
+        .replace(/\bwater source\s+water source\b/gi, 'water source');
+    }
+
+    function enforceWaterSourceRule(result, notes) {
+      const notesText = normalizeSignalText(notes || '');
+      const strictNoWater = hasNoWaterSignal(notesText);
+      const allowSpecificSource = !strictNoWater && hasExplicitWaterSourceOrSoundSignal(notesText);
+      if (allowSpecificSource) return result;
+
+      const patched = {
+        ...result,
+        immediate: sanitizeSpecificWaterSourceClaims(result.immediate),
+        next: sanitizeSpecificWaterSourceClaims(result.next),
+        avoid: sanitizeSpecificWaterSourceClaims(result.avoid),
+        battery: sanitizeSpecificWaterSourceClaims(result.battery)
+      };
+
+      if (strictNoWater) {
+        patched.immediate = String(patched.immediate || '')
+          .replace(/\b(nearby water source|confirmed nearby water source|nearest water source|reported water source|water source nearby|water source|water sources)\b/gi, 'water signs');
+        patched.next = String(patched.next || '')
+          .replace(/\b(nearby water source|confirmed nearby water source|nearest water source|reported water source|water source nearby|water source|water sources)\b/gi, 'water signs');
+        patched.avoid = String(patched.avoid || '')
+          .replace(/\b(nearby water source|confirmed nearby water source|nearest water source|reported water source|water source nearby|water source|water sources)\b/gi, 'water signs');
+      }
+
+      const combined = `${patched.immediate || ''} ${patched.next || ''}`.toLowerCase();
+      if (!combined.includes('look for signs of water')) {
+        const currentNext = String(patched.next || '').trim();
+        const suffix = currentNext && !/[.!?]$/.test(currentNext) ? '.' : '';
+        patched.next = `${currentNext}${suffix}${currentNext ? ' ' : ''}Look for signs of water before committing to a longer route.`;
+      }
+
+      return patched;
+    }
+
+    function getHybridImmediatePriority(context) {
+      const notesLower = String(context.notes || '').toLowerCase();
+      const predatorSignal = Boolean(context.predatorSignal) || hasPredatorSignal(notesLower);
+      const lionSignal = Boolean(context.lionSignal) || hasLionSignal(notesLower);
+      const directHumanActivitySignal =
+        Boolean(context.directHumanActivitySignal) || hasHumanActivitySignal(notesLower);
+      const domesticAnimalCivilizationSignal =
+        Boolean(context.domesticAnimalCivilizationSignal) || hasDomesticAnimalCivilizationSignal(notesLower);
+      const humanActivitySignal =
+        Boolean(context.humanActivitySignal) || directHumanActivitySignal || domesticAnimalCivilizationSignal;
+      const humanActivityCue = String(
+        context.humanActivityCue ||
+        (directHumanActivitySignal
+          ? getHumanActivityCue(notesLower)
+          : domesticAnimalCivilizationSignal
+            ? getDomesticAnimalCivilizationCue(notesLower)
+            : 'human activity signal')
+      );
+      const defenseGear = context.defenseGear || getDefenseGearSignal(notesLower);
+      const hasDefenseGear = Boolean(defenseGear && defenseGear.hasDefenseGear);
+      const orientationUnreliable = Boolean(context.orientationUnreliable);
+      const direction = orientationUnreliable ? '' : getDirectionFromNotes(notesLower);
+      const hasTent =
+        notesLower.includes('tent') ||
+        notesLower.includes('barraca');
+      const hasRiver =
+        notesLower.includes('river') ||
+        notesLower.includes('rio') ||
+        notesLower.includes('stream') ||
+        notesLower.includes('creek');
+      const hasLake =
+        notesLower.includes('lake') ||
+        notesLower.includes('lago');
+      const hasWaterfall =
+        notesLower.includes('waterfall') ||
+        notesLower.includes('cachoeira') ||
+        notesLower.includes("queda d'agua") ||
+        notesLower.includes('queda de agua');
+      const nearbyWaterPriority = hasNearbyWaterPrioritySignal(notesLower);
+      const audibleWaterSignal =
+        Boolean(context.audibleWaterSignal) || hasAudibleWaterSignal(notesLower);
+      const waterDistanceMeters = getWaterDistanceMeters(notesLower);
+      const noWaterSignal =
+        Boolean(context.noWaterSignal) ||
+        hasNoWaterSignal(notesLower) ||
+        (Number.isFinite(context.waterReserveMl) && context.waterReserveMl <= 0);
+      const explicitWaterEvidence = hasExplicitWaterSourceOrSoundSignal(notesLower);
+      const hasCave =
+        notesLower.includes('cave') ||
+        notesLower.includes('cavern') ||
+        notesLower.includes('caverna') ||
+        notesLower.includes('gruta');
+      const hasShelter = hasTent || hasCave;
+      const isFatigued =
+        notesLower.includes('tired') ||
+        notesLower.includes('exhausted') ||
+        notesLower.includes('weak') ||
+        notesLower.includes('shaking') ||
+        notesLower.includes('trembling') ||
+        notesLower.includes('tremor') ||
+        notesLower.includes('tremendo') ||
+        notesLower.includes('cansado') ||
+        notesLower.includes('exausto');
+      const lowVisibility =
+        context.isNightOrLowVisibility ||
+        notesLower.includes('night') ||
+        notesLower.includes('dark') ||
+        notesLower.includes('noite') ||
+        notesLower.includes('escuro');
+      const coldSignal =
+        context.coldSignal ||
+        notesLower.includes('cold') ||
+        notesLower.includes('frio') ||
+        notesLower.includes('hypothermia') ||
+        notesLower.includes('hipotermia');
+      const heatSignal =
+        Boolean(context.heatSignal) || hasHeatSignal(notesLower);
+      const heavyClothingSignal =
+        Boolean(context.heavyClothingSignal) || hasHeavyClothingSignal(notesLower);
+      const heatDehydrationRiskSignal =
+        Boolean(context.heatDehydrationRiskSignal) || hasHeatDehydrationRiskSignal(notesLower);
+      const emergencyMove =
+        context.emergencyMove ||
+        notesLower.includes('fire') ||
+        notesLower.includes('wildfire') ||
+        notesLower.includes('flood') ||
+        notesLower.includes('flash flood') ||
+        notesLower.includes('landslide') ||
+        predatorSignal;
+      const rainSignal = hasRainSignal(notesLower);
+      const severeWeatherSignal =
+        Boolean(context.severeWeatherSignal) || hasSevereWeatherSignal(notesLower);
+      const caveRiskSignal = hasCaveRiskSignal(notesLower);
+      const denseForestSignal =
+        context.terrain === 'dense forest' ||
+        notesLower.includes('dense forest') ||
+        notesLower.includes('floresta densa');
+      const strongOpportunitySignal =
+        humanActivitySignal ||
+        nearbyWaterPriority ||
+        audibleWaterSignal ||
+        domesticAnimalCivilizationSignal;
+      const shouldStay =
+        hasShelter &&
+        !strongOpportunitySignal &&
+        (context.battery <= 20 ||
+          context.risk === 'HIGH' ||
+          coldSignal ||
+          rainSignal ||
+          lowVisibility ||
+          notesLower.includes('injured') ||
+          isFatigued);
+
+      if (severeWeatherSignal) {
+        if (hasShelter) {
+          return (
+            'CRITICAL:\n' +
+            '1. Decision: STAY PUT and use shelter immediately due lightning/storm/extreme weather risk.\n' +
+            '2. Avoid open areas, isolated tall objects, ridgelines, and high ground right now.\n' +
+            '3. Delay navigation decisions; focus on staying dry, insulated, and protected.\n' +
+            '4. Reassess movement only after weather stabilizes and route safety improves.'
+          );
+        }
+
+        return (
+          'CRITICAL:\n' +
+          '1. Decision: MOVE NOW only to reach the nearest safer shelter, then STAY PUT.\n' +
+          '2. Avoid open areas, isolated tall objects, ridgelines, and high ground due lightning/storm risk.\n' +
+          '3. Keep this move short, low-effort, and reversible; do not continue broader navigation now.\n' +
+          '4. Delay navigation decisions until weather conditions stabilize.'
+        );
+      }
+
+      if (!severeWeatherSignal && lowVisibility && !emergencyMove && !strongOpportunitySignal) {
+        if (hasShelter) {
+          const lowVisibilityLine = noWaterSignal
+            ? '4. At first safe daylight, execute a short controlled move to search for signs of water or civilization cues.'
+            : '4. Resume navigation after daylight and reassess direction then.';
+          const shelterLine = caveRiskSignal
+            ? hasTent
+              ? '1. Decision: STAY PUT and use your tent now. Do not enter the cave until you inspect it from distance for noise, tracks, or smell.\n'
+              : '1. Decision: STAY PUT near the cave entrance and do not enter until you inspect it from distance for noise, tracks, or smell.\n'
+            : '1. Decision: STAY PUT and use your shelter now (tent/cave) unless there is an immediate life-threatening danger.\n';
+
+          return (
+            'CRITICAL:\n' +
+            shelterLine +
+            '2. Do not move in darkness; visibility and predator risk are too high.\n' +
+            `${rainSignal ? '3. Rain is a priority: secure dry insulation and waterproof your gear now.\n' : '3. Prioritize warmth and insulation before sleep or rest.\n'}` +
+            lowVisibilityLine
+          );
+        }
+
+        if (rainSignal) {
+          const rainLowVisibilityLine = noWaterSignal
+            ? '4. At first safe daylight, run a short, marked move to search for signs of water or reach civilization signs.'
+            : '4. Wait for daylight to navigate with lower risk.';
+          return (
+            'CRITICAL:\n' +
+            '1. Decision: STAY PUT and build immediate rain shelter before moving.\n' +
+            '2. Do not move in darkness unless immediate danger forces relocation.\n' +
+            '3. Rain increases cold and terrain risk; prioritize staying dry and insulated.\n' +
+            rainLowVisibilityLine
+          );
+        }
+
+        const noShelterLowVisibilityLine = noWaterSignal
+          ? '4. At first safe daylight, execute a short controlled move to search for signs of water or civilization signals.'
+          : '4. Wait for daylight to navigate with lower risk.';
+        return (
+          'CRITICAL:\n' +
+          '1. Decision: STAY PUT and create the safest shelter possible before moving again.\n' +
+          '2. Do not move in darkness unless immediate danger forces relocation.\n' +
+          '3. Prioritize insulation and body heat conservation now.\n' +
+          noShelterLowVisibilityLine
+        );
+      }
+
+      if (lowVisibility && !emergencyMove && strongOpportunitySignal) {
+        if (humanActivitySignal) {
+          return (
+            'CRITICAL:\n' +
+            '1. Decision: STAY PUT in the nearest safe open line-of-sight position and start rescue signaling now.\n' +
+            `2. Use clear signals toward the reported ${humanActivityCue || 'human activity signal'} (light, movement, sound, controlled fire when safe).\n` +
+            '3. Avoid long movement in low visibility; only make very short repositioning moves to improve visibility/signal.\n' +
+            '4. Reassess at daylight or when the signal source becomes clearly reachable and safe.'
+          );
+        }
+
+        const opportunityCue = humanActivitySignal
+          ? humanActivityCue || 'human activity signal'
+          : domesticAnimalCivilizationSignal
+            ? getDomesticAnimalCivilizationCue(notesLower)
+            : audibleWaterSignal
+              ? 'audible water source'
+              : 'nearby water source';
+        const headingLine = direction
+          ? `3. Keep heading ${direction} while moving in short stages, and mark each turn before advancing again.\n`
+          : '3. Move in short stages and mark each turn before advancing again.\n';
+        const routeLine = denseForestSignal
+          ? '2. In dense forest, move in micro-stages through the clearest corridor, keep line-of-sight to your last marker, and avoid blind thickets.\n'
+          : '2. Keep line-of-sight, avoid dense terrain, and reassess every 1-2 minutes.\n';
+        const heatLine = heatDehydrationRiskSignal || (heatSignal && heavyClothingSignal)
+          ? '4. Heat and heavy clothing increase dehydration risk: reduce layers, use shade pauses, and hydrate as soon as water is secured.'
+          : '4. Keep movement low-effort and low-noise; if route safety drops, stop and hold a protected position.';
+
+        return (
+          'CRITICAL:\n' +
+          `1. Decision: MOVE NOW with cautious staged movement toward the ${opportunityCue}.\n` +
+          routeLine +
+          headingLine +
+          heatLine
+        );
+      }
+
+      if (humanActivitySignal && !lowVisibility) {
+        const cue = humanActivityCue || 'human activity signal';
+        const headingLine = `3. If you move, do it in short stages toward the ${cue}${direction ? ` while preserving heading ${direction}` : ''}; every 1-2 minutes pause, listen, and reassess.`;
+
+        if (predatorSignal) {
+          const predatorLabel = lionSignal ? 'lion' : 'predator';
+          const defenseLine = hasDefenseGear
+            ? `4. Keep ${defenseGear.summary} ready for last-resort defense only; do not confront the ${predatorLabel}.`
+            : `4. Keep distance from the ${predatorLabel}, avoid confrontation, and use open terrain for visibility.`;
+
+          return (
+            'CRITICAL:\n' +
+            `1. Decision: STAY PUT in a safe open area and start active rescue signaling toward the ${cue}, while staying away from reported ${predatorLabel} signs.\n` +
+            `2. Keep maximum distance from the ${predatorLabel}; avoid dense vegetation, closed trails, and low-visibility ambush zones.\n` +
+            `${headingLine}\n` +
+            defenseLine
+          );
+        }
+
+        const defenseLine = hasDefenseGear
+          ? `4. Keep ${defenseGear.summary} accessible as backup protection, but prioritize safe movement and signaling over confrontation.`
+          : '4. Keep route markers and visual references to avoid losing your return path.';
+
+        return (
+          'CRITICAL:\n' +
+          `1. Decision: STAY PUT in the nearest safe open line-of-sight position and signal toward the ${cue} as a rescue cue.\n` +
+          '2. Prioritize signaling and visibility over long movement; only reposition in short safe stages if needed.\n' +
+          `${headingLine}\n` +
+          defenseLine
+        );
+      }
+
+      if (nearbyWaterPriority && !lowVisibility) {
+        const waterSource = hasWaterfall ? 'waterfall' : hasRiver ? 'river' : hasLake ? 'lake' : 'water source';
+        const distanceText = waterDistanceMeters !== null ? ` around ${waterDistanceMeters} meters away` : ' nearby';
+        return (
+          'CRITICAL:\n' +
+          `1. Decision: MOVE NOW with a short, controlled round trip to the reported ${waterSource}${distanceText}.\n` +
+          '2. Check descent and footing first; if terrain is unstable, stop and choose the safest reachable point.\n' +
+          '3. Collect water quickly, avoid entering water unless required, then return to your safest shelter position.\n' +
+          `${direction ? `4. Keep your known heading (${direction}) and mark the route so you can return safely.` : '4. Orientation cues may be unreliable: use visible landmarks and route markers for a short reversible round trip.'}`
+        );
+      }
+
+      if (shouldStay) {
+        if (caveRiskSignal) {
+          return (
+            'CRITICAL:\n' +
+            `1. Decision: STAY PUT and prioritize immediate protection${hasTent ? ' in your tent' : ' near cave entrance'}.\n` +
+            `${hasTent ? '2. Keep the cave as backup only after distance inspection for noise, tracks, smell, or other animal signs.\n' : '2. Do not enter the cave yet; inspect from distance for noise, tracks, smell, or other animal signs first.\n'}` +
+            `${rainSignal ? '3. Rain is a priority: stay dry, insulate body heat, and protect gear from water.\n' : '3. Save energy now; avoid unnecessary climbing and only move for safer water access.\n'}` +
+            `${direction ? `4. Keep orientation from your last heading (${direction}) and place stone/branch markers near shelter and route.` : '4. Keep orientation using visible landmarks and place stone/branch markers near shelter and route.'}`
+          );
+        }
+
+        return (
+          'CRITICAL:\n' +
+          `1. Decision: STAY PUT and use available shelter (${hasTent && hasCave ? 'tent or cave' : hasTent ? 'tent' : 'cave'}) as immediate protection.\n` +
+          `${rainSignal ? '2. Rain is a priority: stay dry, protect insulation, and avoid long movement until conditions improve.\n' : '2. Save energy now; avoid unnecessary climbing and only move for safer water access.\n'}` +
+          `${direction ? `3. Keep orientation from your last heading (${direction}) and place stone/branch markers near shelter and route.\n` : '3. Keep orientation using visible landmarks and place stone/branch markers near shelter and route.\n'}` +
+          '4. If you must fetch water, make a short round trip and return to the same shelter.'
+        );
+      }
+
+      if (explicitWaterEvidence && !noWaterSignal && context.terrain === 'downhill') {
+        const waterSource = hasRiver ? 'river' : hasLake ? 'lake' : 'water source';
+        const heatLine = heatDehydrationRiskSignal || (heatSignal && heavyClothingSignal)
+          ? '4. Reduce heat load now: loosen heavy clothing, favor shade stops, and hydrate early once water is secured.'
+          : direction ? `4. Keep your known heading (${direction}) and mark your route using stones, broken branches, or arrows on the ground.` : '4. Keep orientation with visible landmarks and mark your route using stones, broken branches, or arrows on the ground.';
+        return (
+          'CRITICAL:\n' +
+          '1. Decision: MOVE carefully toward the nearest water source, then stop and reassess safety.\n' +
+          `2. Prefer the reported ${waterSource}; do not enter water unless crossing is required.\n` +
+          `${hasRiver ? '3. Follow the river downhill when safe, because it can increase chances of finding people or paths.\n' : '3. If water is still or uncertain, make short controlled moves and reassess often.\n'}` +
+          heatLine
+        );
+      }
+
+      if (noWaterSignal && !lowVisibility) {
+        return (
+          'CRITICAL:\n' +
+          '1. Decision: MOVE NOW with short, low-effort stages to search for signs of water or confirmed civilization cues.\n' +
+          '2. No water is an urgent survival condition; avoid delay and reassess direction every 1-2 minutes.\n' +
+          `${direction ? `3. Keep your known heading (${direction}) and mark turns so you can backtrack safely.\n` : '3. Use visible landmarks and route markers to preserve your backtrack path safely.\n'}` +
+          '4. If route becomes unsafe or direction is lost, stop immediately and set temporary shelter.'
+        );
+      }
+
+      return '';
+    }
+
+    function applyHybridGuidance(parsed, context) {
+      const result = { ...parsed };
+      const notesLower = String(context.notes || '').toLowerCase();
+      const lowVisibility = Boolean(context.isNightOrLowVisibility);
+      const coldSignal = Boolean(context.coldSignal);
+      const hasShelter = Boolean(context.hasShelter);
+      const emergencyMove = Boolean(context.emergencyMove);
+      const directionSignal = String(context.notedDirection || '');
+      const orientationUnreliable = Boolean(context.orientationUnreliable);
+      const foodMentionSignal = Boolean(context.foodMentionSignal);
+      const knownEdibleFoodSignal =
+        Boolean(context.knownEdibleFoodSignal) || hasKnownEdibleFoodSignal(notesLower);
+      const scorpionSignal = Boolean(context.scorpionSignal);
+      const animalSignal = String(context.animalSignal || '');
+      const predatorSignal = Boolean(context.predatorSignal) || hasPredatorSignal(notesLower);
+      const lionSignal = Boolean(context.lionSignal) || hasLionSignal(notesLower);
+      const directHumanActivitySignal =
+        Boolean(context.directHumanActivitySignal) || hasHumanActivitySignal(notesLower);
+      const domesticAnimalCivilizationSignal =
+        Boolean(context.domesticAnimalCivilizationSignal) || hasDomesticAnimalCivilizationSignal(notesLower);
+      const humanActivitySignal =
+        Boolean(context.humanActivitySignal) || directHumanActivitySignal || domesticAnimalCivilizationSignal;
+      const humanActivityCue = String(
+        context.humanActivityCue ||
+        (directHumanActivitySignal
+          ? getHumanActivityCue(notesLower)
+          : domesticAnimalCivilizationSignal
+            ? getDomesticAnimalCivilizationCue(notesLower)
+            : 'human activity signal')
+      );
+      const defenseGear = context.defenseGear || getDefenseGearSignal(notesLower);
+      const hasDefenseGear = Boolean(defenseGear && defenseGear.hasDefenseGear);
+      const defenseGearSummary = hasDefenseGear ? defenseGear.summary : '';
+      const waterReserveMl = Number.isFinite(context.waterReserveMl) ? context.waterReserveMl : null;
+      const criticalLowWaterReserve = waterReserveMl !== null && waterReserveMl <= 250;
+      const noWaterSignal =
+        Boolean(context.noWaterSignal) ||
+        hasNoWaterSignal(notesLower) ||
+        waterReserveMl === 0;
+      const severeWeatherSignal =
+        Boolean(context.severeWeatherSignal) || hasSevereWeatherSignal(notesLower);
+      const rainSignal = hasRainSignal(notesLower);
+      const caveRiskSignal = hasCaveRiskSignal(notesLower);
+      const hasTent =
+        notesLower.includes('tent') ||
+        notesLower.includes('barraca');
+      const hasCave =
+        notesLower.includes('cave') ||
+        notesLower.includes('cavern') ||
+        notesLower.includes('caverna') ||
+        notesLower.includes('gruta');
+      const nearWater =
+        !noWaterSignal && hasWaterKeywordSignal(notesLower);
+      const nearbyWaterPriority = hasNearbyWaterPrioritySignal(notesLower);
+      const audibleWaterSignal =
+        Boolean(context.audibleWaterSignal) || hasAudibleWaterSignal(notesLower);
+      const strongOpportunitySignal =
+        humanActivitySignal ||
+        nearbyWaterPriority ||
+        audibleWaterSignal ||
+        domesticAnimalCivilizationSignal;
+      const heatSignal =
+        Boolean(context.heatSignal) || hasHeatSignal(notesLower);
+      const heavyClothingSignal =
+        Boolean(context.heavyClothingSignal) || hasHeavyClothingSignal(notesLower);
+      const heatDehydrationRiskSignal =
+        Boolean(context.heatDehydrationRiskSignal) || hasHeatDehydrationRiskSignal(notesLower);
+      const hybridImmediate = getHybridImmediatePriority(context);
+
+      if (hybridImmediate) {
+        result.immediate = hybridImmediate;
+      }
+
+      if (severeWeatherSignal) {
+        result.next = 'IMPORTANT:\n1. Delay navigation decisions while lightning/storm/extreme weather is active.\n2. Use the nearest safer shelter or protected low spot.\n3. Reassess route only after weather stabilizes and visibility improves.\n4. Keep movements short and reversible.';
+        if (!String(result.avoid || '').toLowerCase().match(/\b(open areas|high ground|ridgeline|isolated tall objects)\b/)) {
+          result.avoid += ' Avoid open areas, isolated tall objects, ridgelines, and high ground during lightning/storm conditions.';
+        }
+      }
+
+      if (orientationUnreliable) {
+        result.immediate = stripSunBasedNavigation(result.immediate);
+        result.next = stripSunBasedNavigation(result.next);
+        result.avoid = stripSunBasedNavigation(result.avoid);
+        const orientationMessage = ' Orientation cues are inconsistent; do not use sun or compass direction. Use visible landmarks, route markers, and short reversible movement.';
+        const orientationCombined = `${result.immediate || ''} ${result.next || ''}`.toLowerCase();
+        if (!orientationCombined.includes('do not use sun or compass')) {
+          result.immediate += orientationMessage;
+        }
+      }
+
+      if (!severeWeatherSignal && lowVisibility && !emergencyMove && !strongOpportunitySignal) {
+        const shelterInstruction = caveRiskSignal
+          ? hasTent
+            ? '1. Decision: STAY PUT and use your tent now. Do not enter the cave until you inspect it from distance for noise, tracks, or smell.\n'
+            : '1. Decision: STAY PUT near cave entrance and do not enter until you inspect it from distance for noise, tracks, or smell.\n'
+          : `1. Decision: STAY PUT${hasShelter ? ' and use your shelter immediately' : ' and secure shelter immediately'} unless there is immediate life-threatening danger.\n`;
+
+        result.immediate =
+          'CRITICAL:\n' +
+          shelterInstruction +
+          '2. Do not move in darkness or low visibility.\n' +
+          `3. ${rainSignal ? 'Rain is a priority: secure dry insulation and waterproof gear now.' : coldSignal ? 'Prioritize warmth and dry insulation now.' : 'Prioritize shelter and insulation now.'}\n` +
+          '4. Resume navigation after daylight.';
+
+        if (!String(result.next || '').toLowerCase().includes('daylight')) {
+          result.next += ' Wait for daylight before navigation unless forced by immediate danger.';
+        }
+        if (!String(result.avoid || '').toLowerCase().includes('dark')) {
+          result.avoid += ' Do not move in darkness or low visibility unless immediate danger forces relocation.';
+        }
+      }
+
+      if (caveRiskSignal && !String(result.avoid || '').toLowerCase().includes('do not enter the cave')) {
+        result.avoid += ' Do not enter a cave immediately; inspect for animal signs (noise, tracks, smell) first.';
+      }
+
+      if (rainSignal && !String(result.immediate || '').toLowerCase().includes('rain is a priority')) {
+        result.immediate += ' Rain is a priority: secure shelter and keep insulation dry before any long movement.';
+      }
+
+      if (heatDehydrationRiskSignal || (heatSignal && heavyClothingSignal)) {
+        const heatCombined = `${result.immediate} ${result.next} ${result.avoid}`.toLowerCase();
+        if (!heatCombined.match(/\b(heat|hot|calor|dehydration|dehydrated|desidrat|heavy clothing|roupa pesada)\b/)) {
+          result.immediate += ' Heat and heavy clothing raise dehydration risk; reduce clothing layers, move in shade when possible, and prioritize hydration.';
+        }
+      }
+
+      if (humanActivitySignal) {
+        const combined = `${result.immediate} ${result.next}`.toLowerCase();
+        if (!combined.match(/\b(chainsaw|human activity|human voices|rescue|engine|machine|tool|livestock|domestic animal|chicken|pig)\b/)) {
+          result.next += ` Treat the reported ${humanActivityCue} as a potential rescue cue; prioritize visibility and signaling first, and only move in short stages if the source is nearby and route safety is clear.`;
+        }
+      }
+
+      if (predatorSignal) {
+        const predatorLabel = lionSignal ? 'lion' : 'predator';
+        const immediateLower = String(result.immediate || '').toLowerCase();
+        const avoidLower = String(result.avoid || '').toLowerCase();
+        if (!immediateLower.match(/\b(lion|predator|jaguar|onca|bear|wolf|big cat)\b/)) {
+          result.immediate += ` ${lionSignal ? 'Lion' : 'Predator'} reported: keep immediate distance, maintain visibility, and avoid entering likely predator territory.`;
+        }
+        if (!avoidLower.match(/\b(lion|predator|jaguar|onca|bear|wolf|ambush|dense vegetation)\b/)) {
+          result.avoid += ` Avoid dense vegetation, closed trails, and blind turns where a ${predatorLabel} can ambush.`;
+        }
+      }
+
+      if (predatorSignal && (nearbyWaterPriority || audibleWaterSignal || nearWater)) {
+        const combined = `${result.immediate} ${result.next} ${result.avoid}`.toLowerCase();
+        if (!combined.match(/\b(predator near water|do not approach water directly|alternative water source)\b/)) {
+          result.immediate += ' Predator near water signal: do not approach water directly; observe from distance, wait if possible, and prefer an alternative water source.';
+        }
+      }
+
+      if (hasCave && audibleWaterSignal) {
+        const combined = `${result.immediate} ${result.next} ${result.avoid}`.toLowerCase();
+        if (!combined.match(/\b(cave|water sound|inspect from distance|exit path)\b/)) {
+          result.next += ' Cave with water sound: inspect from distance first, check for animal signs, and keep a clear exit path before any entry.';
+        }
+      }
+
+      if (hasDefenseGear) {
+        const combined = `${result.immediate} ${result.next} ${result.avoid}`.toLowerCase();
+        if (!combined.match(/\b(flamethrower|bear spray|bear capsule|spray de urso|capsula)\b/)) {
+          result.next += ` Keep ${defenseGearSummary} accessible as backup defense only; do not approach wildlife and do not start confrontation.`;
+        }
+      }
+
+      let immediateLower = String(result.immediate || '').toLowerCase();
+      let avoidLower = String(result.avoid || '').toLowerCase();
+      const saysMove = immediateLower.includes('decision: move now');
+      const warnsExertion =
+        avoidLower.includes('avoid unnecessary physical exertion') ||
+        avoidLower.includes('avoid climbing') ||
+        avoidLower.includes('avoid steep');
+      const uphillPressure =
+        context.terrain === 'uphill' ||
+        notesLower.includes('uphill') ||
+        notesLower.includes('subindo') ||
+        notesLower.includes('morro');
+      if (saysMove && warnsExertion && uphillPressure) {
+        result.immediate =
+          'CRITICAL:\n' +
+          '1. Decision: STAY PUT temporarily and stop uphill movement now.\n' +
+          '2. Conserve energy and reassess route before any movement.\n' +
+          '3. If you move, choose a lower-effort lateral or downhill path with markers.\n' +
+          '4. Move only if it clearly reduces risk.';
+      }
+
+      let batteryLower = String(result.battery || '').toLowerCase();
+      if (isGenericText(result.battery) || batteryLower.length < 35) {
+        result.battery = getHybridBatteryGuidance(context.battery);
+        batteryLower = String(result.battery || '').toLowerCase();
+      }
+      if (context.battery < 20 && (!batteryLower.includes('airplane mode') || !batteryLower.includes('brightness'))) {
+        result.battery += ' Keep airplane mode enabled and lower screen brightness.';
+      }
+      if (context.battery > 50 && !batteryLower.match(/\b(landmark|navigation|heading|map)\b/)) {
+        result.battery += ' Use short map or landmark checks every 20 to 30 minutes, then lock screen to preserve reserve.';
+      }
+
+      const hasAnimalSignal = animalSignal && animalSignal !== 'none reported';
+      if (hasAnimalSignal && !scorpionSignal && !String(result.next || '').toLowerCase().includes('animal')) {
+        result.next += ' Track animal paths cautiously as a possible clue to water, but avoid direct contact and keep distance.';
+      }
+
+      if (hasAnimalSignal && !String(result.avoid || '').toLowerCase().match(/\b(animal|predator|lion|leao|scorpion|snake|bite|sting|urso|lobo|onca|jaguar)\b/)) {
+        result.avoid += ' Keep distance from animals and avoid direct contact; treat fresh tracks, noise, or droppings as active risk cues.';
+      }
+
+      if (scorpionSignal && !String(result.avoid || '').toLowerCase().includes('scorpion')) {
+        result.avoid += ' Scorpion risk: shake shoes and clothes before use, avoid placing hands under rocks/logs, and keep sleeping area clear and elevated.';
+      }
+
+      if (foodMentionSignal && !String(result.avoid || '').toLowerCase().match(/\b(food|eat|edible|fruit|berry|mushroom|comida|fruta|cogumelo)\b/)) {
+        result.avoid += knownEdibleFoodSignal
+          ? ' Food caution: known edible foods (example: bananas) can be used, but inspect for rot, contamination, insects, and chemical exposure before eating.'
+          : ' Food safety: do not eat unknown fruits, plants, mushrooms, or wild animals without certainty and safe preparation.';
+      }
+
+      if (directionSignal && !orientationUnreliable) {
+        const directionLower = directionSignal.toLowerCase();
+        const combinedText = `${result.immediate} ${result.next}`.toLowerCase();
+        if (!combinedText.includes(directionLower)) {
+          result.next += ` Keep movement aligned with heading ${directionSignal} and mark each turn to preserve return path.`;
+        }
+      }
+
+      if (criticalLowWaterReserve) {
+        const reserveText = `~${waterReserveMl} ml`;
+        if (lowVisibility && !emergencyMove) {
+          if (!String(result.next || '').toLowerCase().includes('first safe daylight')) {
+            result.next += ` Water reserve is critically low (${reserveText}); at first safe daylight, execute a short controlled water run and return to shelter.`;
+          }
+        } else if (!String(result.immediate || '').toLowerCase().includes('water reserve is critically low')) {
+          result.immediate += ` Water reserve is critically low (${reserveText}); prioritize a short, low-risk move to secure water now.`;
+        }
+      }
+
+      if (noWaterSignal) {
+        if (!severeWeatherSignal && lowVisibility && !emergencyMove && !strongOpportunitySignal) {
+          if (!String(result.next || '').toLowerCase().includes('first safe daylight')) {
+            result.next += ' No water reported: at first safe daylight, execute a short controlled search for signs of water/civilization and return to known shelter.';
+          }
+        } else if (!String(result.immediate || '').toLowerCase().includes('no water')) {
+          result.immediate += ' No water reported: prioritize an immediate low-risk move to search for signs of water or reach nearby civilization cues.';
+        }
+      }
+
+      if (
+        nearWater &&
+        context.terrain === 'downhill' &&
+        (String(result.immediate || '').toLowerCase().includes('higher ground') || String(result.immediate || '').toLowerCase().includes('climb'))
+      ) {
+        result.immediate += ' IMPORTANT: Climb only if it clearly improves safety or orientation, because it can cost energy and move you away from water.';
+      }
+
+      if (String(result.avoid || '').toLowerCase().includes('do not proceed into the lake')) {
+        result.avoid = result.avoid.replace(
+          /do not proceed into the lake\.?/i,
+          'Avoid entering water unless crossing is essential and safe.'
+        );
+      }
+
+      result.immediate = result.immediate.replace(
+        /stay near water \(lake\)\.?/gi,
+        'Stay near a safe water source.'
+      );
+      if (String(result.immediate || '').toLowerCase().includes('decision: move now')) {
+        result.immediate = result.immediate.replace(
+          /secure shelter before long movement\.?/gi,
+          'If route safety drops, rain starts, or direction is lost, stop and set shelter immediately.'
+        );
+      }
+
+      return result;
+    }
+
+    function setOutputs(data) {
+      immediateOutput.textContent = data.immediate;
+      nextOutput.textContent = data.next;
+      avoidOutput.textContent = data.avoid;
+      batteryOutput.textContent = data.battery;
+    }
+
+    function resetOutputsLoading() {
+      immediateOutput.textContent = 'Analyzing situation...';
+      nextOutput.textContent = 'Preparing next-step guidance...';
+      avoidOutput.textContent = 'Checking what to avoid...';
+      batteryOutput.textContent = 'Reviewing battery strategy...';
+    }
+
+    function toggleSOS() {
+      if (!survivalBasicsActive) {
+        survivalBasicsActive = true;
+        setSurvivalBasicsLayout();
+        setSurvivalTitleInteractivity(true);
+        clearGuidanceOutputs();
+        statusEl.textContent = 'Survival Basics shown.';
+        sosBtn.textContent = 'Hide Survival Basics';
+        return;
+      }
+
+      survivalBasicsActive = false;
+      setAIGuidanceLayout();
+      setInitialGuidanceOutputs();
+      statusEl.textContent = 'Survival Basics hidden.';
+      sosBtn.textContent = 'Survival Basics';
+    }
+
+    function hasTerrainConflict(notes, terrain) {
+      const notesLower = String(notes).toLowerCase();
+      return (
+        terrain === 'downhill' &&
+        (notesLower.includes('up') ||
+          notesLower.includes('uphill') ||
+          notesLower.includes('climb') ||
+          notesLower.includes('ascending'))
+      );
+    }
+
+    function getRemainingDaylight(time) {
+      const totalMinutes = parseTimeToMinutes(time);
+      if (totalMinutes === null) return 'unknown';
+
+      if (totalMinutes >= 1110) return 'little or none';
+      if (totalMinutes >= 1020) return 'limited';
+      return 'adequate';
+    }
+
+    function isNightByTime(time) {
+      const totalMinutes = parseTimeToMinutes(time);
+      if (totalMinutes === null) return false;
+      return totalMinutes >= 18 * 60 + 30 || totalMinutes <= 5 * 60 + 30;
+    }
+
+    function hasLowVisibilitySignal(time, sun, notes) {
+      const notesLower = String(notes || '').toLowerCase();
+      return (
+        isNightByTime(time) ||
+        notesLower.includes('night') ||
+        notesLower.includes('dark') ||
+        notesLower.includes('dense darkness') ||
+        notesLower.includes('low visibility') ||
+        notesLower.includes('no visibility') ||
+        notesLower.includes('dense fog') ||
+        notesLower.includes('heavy fog') ||
+        notesLower.includes('thick fog') ||
+        notesLower.includes('fog muito denso') ||
+        notesLower.includes('neblina densa') ||
+        notesLower.includes('nevoeiro denso') ||
+        notesLower.includes('noite') ||
+        notesLower.includes('escuro') ||
+        notesLower.includes('escuridao densa') ||
+        notesLower.includes('visibilidade baixa') ||
+        notesLower.includes('sem visibilidade')
+      );
+    }
+
+    function hasColdSignal(notes) {
+      const notesLower = String(notes || '').toLowerCase();
+      return (
+        notesLower.includes('cold') ||
+        notesLower.includes('freezing') ||
+        notesLower.includes('hypothermia') ||
+        notesLower.includes('frio') ||
+        notesLower.includes('hipotermia') ||
+        notesLower.includes('gelado')
+      );
+    }
+
+    function getTemperatureCelsiusSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const match = text.match(/\b(-?\d{1,2}(?:[.,]\d+)?)\s?(?:Â°\s*c|celsius|graus?\s*c)\b/);
+      if (!match) return null;
+      const parsed = Number.parseFloat(match[1].replace(',', '.'));
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function hasHeatSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const temperatureC = getTemperatureCelsiusSignal(text);
+      const keywordHeat =
+        /\b(hot|heat|overheat|overheating|calor|quente|muito quente|sol forte|high temperature|temperatura alta)\b/.test(text);
+      return keywordHeat || (temperatureC !== null && temperatureC >= 29);
+    }
+
+    function hasHeavyClothingSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(heavy clothes|heavy clothing|thick clothes|thick clothing|winter jacket|heavy jacket|roupa pesada|roupas pesadas|roupa grossa|casaco pesado|jaqueta pesada|muita roupa)\b/.test(text);
+    }
+
+    function hasHeatDehydrationRiskSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const dehydrationWord =
+        /\b(dehydration|dehydrated|dehydrate|desidrat|muita sede|sede forte|thirsty|very thirsty)\b/.test(text);
+      return (hasHeatSignal(text) && hasHeavyClothingSignal(text)) || dehydrationWord;
+    }
+
+    function hasExhaustionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(tired|fatigue|fatigued|exhausted|exhaustion|weak|weakness|shaking|shake|trembling|tremor|cansado|cansada|fadiga|exausto|exausta|fraco|fraca|tremendo)\b/.test(text);
+    }
+
+    function getSunNarrativeSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(sunrise|sun rising|rising sun|sun is rising|dawn|amanhecer|nascer do sol|sol nascendo|sol esta nascendo|sol ta nascendo)\b/.test(text)) {
+        return 'rising';
+      }
+      if (/\b(sunset|sun setting|setting sun|sun is setting|dusk|entardecer|por do sol|pordo sol|sol se pondo|sol esta se pondo|sol ta se pondo)\b/.test(text)) {
+        return 'setting';
+      }
+      return null;
+    }
+
+    function getSunCardinalMentionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(sun (is|in|to the|toward the)?\s*east|sol (esta|ta|no|a)?\s*leste)\b/.test(text)) return 'east';
+      if (/\b(sun (is|in|to the|toward the)?\s*west|sol (esta|ta|no|a)?\s*oeste)\b/.test(text)) return 'west';
+      return null;
+    }
+
+    function getSunRelativePositionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(sun|sol)\b[^.!?\n]{0,30}\b(behind|behind me|atras|atras de mim)\b/.test(text)) return 'behind';
+      if (/\b(sun|sol)\b[^.!?\n]{0,30}\b(ahead|in front|front|a frente|na frente)\b/.test(text)) return 'ahead';
+      if (/\b(sun on (the )?left|sun left|sol a esquerda|sol na esquerda|sol do lado esquerdo)\b/.test(text)) return 'left';
+      if (/\b(sun on (the )?right|sun right|sol a direita|sol na direita|sol do lado direito)\b/.test(text)) return 'right';
+      return null;
+    }
+    function getShadowRelativePositionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(behind|behind me|atras|atras de mim)\b/.test(text)) return 'behind';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(ahead|in front|forward|frente|a frente|na frente)\b/.test(text)) return 'ahead';
+      if (/\b(shadow on (the )?left|shadow left|sombra a esquerda|sombra na esquerda|sombra do lado esquerdo)\b/.test(text)) return 'left';
+      if (/\b(shadow on (the )?right|shadow right|sombra a direita|sombra na direita|sombra do lado direito)\b/.test(text)) return 'right';
+      return null;
+    }
+    function getShadowCardinalDirectionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(north[-\s]?east|northeast|nordeste)\b/.test(text)) return 'north-east';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(south[-\s]?east|southeast|sudeste)\b/.test(text)) return 'south-east';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(south[-\s]?west|southwest|sudoeste)\b/.test(text)) return 'south-west';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(north[-\s]?west|northwest|noroeste)\b/.test(text)) return 'north-west';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(north|norte)\b/.test(text)) return 'north';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(south|sul)\b/.test(text)) return 'south';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(east|leste)\b/.test(text)) return 'east';
+      if (/\b(shadow|sombra)\b[^.!?\n]{0,30}\b(west|oeste)\b/.test(text)) return 'west';
+      return null;
+    }
+    function getShadowLengthSignal(notes) {
+      const text = normalizeSignalText(notes);
+      if (/\b(long shadow|long shadows|shadow is long|shadow looks long|sombra longa|sombras longas|sombra comprida|sombras compridas)\b/.test(text)) return 'long';
+      if (/\b(short shadow|short shadows|shadow is short|shadow looks short|sombra curta|sombras curtas|sombra pequena|sombras pequenas)\b/.test(text)) return 'short';
+      return null;
+    }
+    function getLightRelativePositionSignal(notes) {
+      const text = normalizeSignalText(notes);
+      const hasLight = /\b(light|luz)\b/.test(text);
+      if (!hasLight) return null;
+      if (/\b(from (the )?front|in front|ahead|frente|a frente|na frente|vindo da frente)\b/.test(text)) return 'ahead';
+      if (/\b(from behind|behind me|atras de mim|vindo de tras)\b/.test(text)) return 'behind';
+      if (/\b(from (the )?left|left side|lado esquerdo|a esquerda|na esquerda)\b/.test(text)) return 'left';
+      if (/\b(from (the )?right|right side|lado direito|a direita|na direita)\b/.test(text)) return 'right';
+      return null;
+    }
+
+    function getExpectedSunRelativePosition(heading, sunPosition) {
+      const sunAzimuth = sunPosition === 'east' ? 90 : sunPosition === 'west' ? 270 : null;
+      if (sunAzimuth === null || heading === null) return null;
+      const delta = (sunAzimuth - heading + 360) % 360;
+      if (delta <= 45 || delta >= 315) return 'ahead';
+      if (delta >= 135 && delta <= 225) return 'behind';
+      if (delta > 45 && delta < 135) return 'right';
+      return 'left';
+    }
+
+    function detectPhysicalOrientationConflict({ sunPosition, notes }) {
+      const text = normalizeSignalText(notes || '');
+      const issues = [];
+      const sunDirection = getSunRelativePositionSignal(text);
+      const shadowDirection = getShadowRelativePositionSignal(text);
+      const shadowCardinalDirection = getShadowCardinalDirectionSignal(text);
+      const shadowLength = getShadowLengthSignal(text);
+      const shadowDirectionalSignal = shadowDirection || shadowCardinalDirection;
+      const lightDirection = getLightRelativePositionSignal(text);
+      const hasSunBehindMe =
+        /\b(sun|sol)\b[^.!?\n]{0,30}\b(behind me|atras de mim)\b/.test(text) ||
+        text.includes('sun behind me') ||
+        text.includes('sun is behind me') ||
+        text.includes('sol atras de mim') ||
+        text.includes('sol esta atras de mim');
+      const hasLightWord = /\b(light|luz)\b/.test(text);
+      const hasFaceWord = /\b(face|rosto|cara)\b/.test(text);
+      const sunAheadShadowForwardConflict = sunDirection === 'ahead' && shadowDirection === 'ahead';
+      if (sunAheadShadowForwardConflict) {
+        issues.push(
+          'Sun/shadow conflict: user reports sun ahead and shadow forward, but shadows should point away from the sun.'
+        );
+      }
+      if (sunDirection === 'behind' && shadowDirection === 'behind') {
+        issues.push(
+          'Sun/shadow conflict: user reports sun behind and shadow behind, but shadows should point away from the sun.'
+        );
+      }
+      if (sunDirection && shadowDirection && sunDirection === shadowDirection) {
+        issues.push(
+          `Sun/shadow direction conflict: sun direction (${sunDirection}) and shadow direction (${shadowDirection}) cannot be the same.`
+        );
+      }
+      if (sunPosition === 'overhead' && shadowLength === 'long') {
+        issues.push(
+          'Sun/shadow conflict: sun is overhead, but notes report long shadows. Overhead sun should not produce a long directional shadow cue.'
+        );
+      }
+      if (sunPosition === 'overhead' && shadowDirectionalSignal) {
+        issues.push(
+          `Sun/shadow conflict: sun is overhead, but notes report shadow direction (${shadowDirectionalSignal}). Overhead sun should not provide reliable shadow direction.`
+        );
+      }
+      const westBehindLightFaceConflict =
+        sunPosition === 'west' &&
+        hasSunBehindMe &&
+        hasLightWord &&
+        hasFaceWord;
+      if (westBehindLightFaceConflict) {
+        issues.push(
+          'Sun/light conflict: sun is west and behind the user, but notes report light hitting the face from the front.'
+        );
+      }
+      if (sunDirection === 'behind' && lightDirection === 'ahead') {
+        issues.push(
+          'Sun/light conflict: user reports sun behind and light from the front.'
+        );
+      }
+      return {
+        issues,
+        sunAheadShadowForwardConflict
+      };
+    }
+
+    function detectConflict({ time, sunPosition, heading, notes }) {
+      const issues = [];
+      const warningLines = [];
+      const totalMinutes = parseTimeToMinutes(time);
+      const notesNormalized = normalizeSignalText(notes || '');
+      let removeSunDataFromPrompt = false;
+      const addConflictIssue = (issue, warningLine) => {
+        if (!issues.includes(issue)) {
+          issues.push(issue);
+        }
+        const line = warningLine || issue;
+        if (!warningLines.includes(line)) {
+          warningLines.push(line);
+        }
+      };
+
+      if (totalMinutes !== null) {
+        if (totalMinutes >= 15 * 60 && sunPosition === 'east') {
+          issues.push('Sun position may be incorrect for the time');
+          warningLines.push(`Time = ${time}, but sun position = east.`);
+        }
+
+        const deepNight = totalMinutes >= 22 * 60 || totalMinutes <= 4 * 60;
+        if (deepNight && sunPosition !== 'not visible') {
+          issues.push('Sun visibility conflicts with likely night conditions');
+          warningLines.push(`Time = ${time}, but sun position = ${sunPosition}.`);
+        }
+
+        const earlyMorning = totalMinutes >= 5 * 60 && totalMinutes <= 7 * 60;
+        if (earlyMorning && sunPosition === 'west') {
+          issues.push('Sun position may be incorrect for early morning');
+          warningLines.push(`Time = ${time}, but sun position = west.`);
+        }
+
+        const lateAfternoon = totalMinutes >= 16 * 60 && totalMinutes <= 19 * 60;
+        if (lateAfternoon && sunPosition === 'east') {
+          issues.push('Sun position may be incorrect for late afternoon');
+          warningLines.push(`Time = ${time}, but sun position = east.`);
+        }
+      }
+
+      const sunNarrativeSignal = getSunNarrativeSignal(notes);
+      if (sunNarrativeSignal === 'rising' && sunPosition === 'west') {
+        issues.push('Sun position conflicts with rising description');
+        warningLines.push('Sun position = west, but user says sun is rising.');
+      } else if (sunNarrativeSignal === 'setting' && sunPosition === 'east') {
+        issues.push('Sun position conflicts with setting description');
+        warningLines.push('Sun position = east, but user says sun is setting.');
+      }
+
+      const reportedSunCardinal = getSunCardinalMentionSignal(notes);
+      if (
+        reportedSunCardinal &&
+        (sunPosition === 'east' || sunPosition === 'west') &&
+        reportedSunCardinal !== sunPosition
+      ) {
+        issues.push('Sun position conflicts with user description');
+        warningLines.push(`Sun position = ${sunPosition}, but user describes sun as ${reportedSunCardinal}.`);
+      }
+
+      const reportedSunRelative = getSunRelativePositionSignal(notes);
+      const expectedSunRelative = getExpectedSunRelativePosition(heading, sunPosition);
+      if (reportedSunRelative && expectedSunRelative && reportedSunRelative !== expectedSunRelative) {
+        issues.push('Compass heading conflicts with described sun relative position');
+        warningLines.push(`Compass heading = ${heading}°, sun position = ${sunPosition}, but user says sun is ${reportedSunRelative} (expected ${expectedSunRelative}).`);
+      }
+
+      const hasLowVisibility =
+        /\b(heavy fog|fog|mist|storm clouds|cloudy|dense canopy|thick clouds|rain clouds|dense fog|thick fog|neblina|nevoeiro|nublado|nuvens densas|copa densa)\b/.test(notesNormalized);
+
+      const sunNotVisible =
+        sunPosition === 'not visible' ||
+        /\b(sun is not visible|cannot see the sun|can't see the sun|no visible sun|sun hidden|sol nao visivel|nao vejo o sol|sol escondido)\b/.test(notesNormalized);
+
+      const hasShadowCue =
+        /\b(shadow|shadows|sombra|sombras)\b/.test(notesNormalized);
+
+      const hasDirectionalShadow =
+        hasShadowCue && (
+          /\b(shadow|shadows|sombra|sombras)\s+(?:is|are|esta|estao)?\s*(?:long|sharp|clear|stretching|pointing|toward|towards|comprida|compridas|apontando|em direcao)?\s*(?:east|west|north|south|left|right|front|behind|back|leste|oeste|norte|sul|esquerda|direita|frente|atras)\b/.test(notesNormalized) ||
+          /\b(long|sharp|clear|comprida|compridas)\s+(shadow|shadows|sombra|sombras)\b/.test(notesNormalized) ||
+          /\b(shadow|shadows|sombra|sombras)\b[^.!?\n]{0,40}\b(east|west|north|south|left|right|front|behind|back|leste|oeste|norte|sul|esquerda|direita|frente|atras)\b/.test(notesNormalized)
+        );
+
+      const hasDirectionalLight =
+        /\blight\s+(?:is\s+)?(?:hitting|coming|shining)\s+(?:my\s+)?(?:face|front|left|right|back|behind)\b/.test(notesNormalized) ||
+        /\blight\b[^.!?\n]{0,30}\b(face|front|left|right|back|behind)\b/.test(notesNormalized) ||
+        /\bluz\s+(?:esta\s+)?(?:batendo|vindo|incidindo)\s+(?:no\s+meu\s+)?(?:rosto|frente|esquerda|direita|atras)\b/.test(notesNormalized);
+
+      if ((sunNotVisible || hasLowVisibility) && (hasDirectionalShadow || hasDirectionalLight)) {
+        removeSunDataFromPrompt = true;
+        addConflictIssue(
+          'Light/shadow cue conflicts with sun not visible or low visibility.',
+          'Light/shadow cues may be unreliable because the sun is not visible or visibility is poor.'
+        );
+      }
+
+      const sunOverhead =
+        sunPosition === 'overhead' ||
+        /\b(sun is overhead|sun directly overhead|sun above me|sol acima de mim|sol diretamente acima)\b/.test(notesNormalized);
+
+      const longShadow =
+        /\b(long shadow|shadow is long|shadows are long|shadow stretching|shadow stretches|sombra longa|sombras longas|sombra esticada)\b/.test(notesNormalized);
+
+      const shadowHasDirection =
+        /\b(shadow|shadows|sombra|sombras)\s+(?:is|are|esta|estao)?\s*(?:pointing|toward|towards|stretching|stretches|apontando|em direcao)\s+(?:east|west|north|south|front|behind|back|left|right|leste|oeste|norte|sul|frente|atras|esquerda|direita)\b/.test(notesNormalized) ||
+        /\b(shadow|shadows|sombra|sombras)\b[^.!?\n]{0,40}\b(pointing|toward|towards|stretching|stretches|apontando|em direcao)\b[^.!?\n]{0,20}\b(east|west|north|south|front|behind|back|left|right|leste|oeste|norte|sul|frente|atras|esquerda|direita)\b/.test(notesNormalized);
+
+      if (sunOverhead && (longShadow || shadowHasDirection)) {
+        removeSunDataFromPrompt = true;
+        addConflictIssue(
+          'Overhead sun conflicts with long or directional shadow.',
+          'Overhead sun should not produce a long directional shadow; do not use shadow direction.'
+        );
+      }
+
+      const sunBehind =
+        /\bsun\b.*\bbehind me\b/.test(notesNormalized) ||
+        /\bsun\b.*\bbehind\b/.test(notesNormalized) ||
+        /\bsol\b.*\batras de mim\b/.test(notesNormalized) ||
+        /\bsol\b.*\batras\b/.test(notesNormalized);
+
+      const lightFront =
+        /\blight\b.*\b(face|front)\b/.test(notesNormalized) ||
+        /\blight is hitting my face\b/.test(notesNormalized) ||
+        /\bluz\b.*\b(rosto|frente)\b/.test(notesNormalized);
+
+      if (sunBehind && lightFront) {
+        removeSunDataFromPrompt = true;
+        addConflictIssue(
+          'Sun behind user conflicts with light hitting face/front.',
+          'Sun/light direction is inconsistent; avoid using sun direction for navigation.'
+        );
+      }
+
+      const physicalConflict = detectPhysicalOrientationConflict({
+        sunPosition,
+        notes
+      });
+
+      if (physicalConflict.sunAheadShadowForwardConflict) {
+        removeSunDataFromPrompt = true;
+      }
+
+      if (physicalConflict.issues.length > 0) {
+        removeSunDataFromPrompt = true;
+        for (const issue of physicalConflict.issues) {
+          addConflictIssue(issue, issue);
+        }
+      }
+
+      const flagConflict = issues.length > 0;
+      if (flagConflict) {
+        removeSunDataFromPrompt = true;
+      }
+
+      return {
+        flagConflict,
+        removeSunDataFromPrompt,
+        forceOrientationWarning: flagConflict,
+        issues,
+        warningLines
+      };
+    }
+
+    function validateSun(time, sunPosition) {
+      const conflictCheck = detectConflict({ time, sunPosition, heading: null, notes: '' });
+      const firstSunIssue = conflictCheck.issues.find((issue) => issue.toLowerCase().includes('sun'));
+      return firstSunIssue ? `WARNING: ${firstSunIssue}.` : null;
+    }
+
+    function hasSunTimeConflict(time, sun) {
+      const conflictCheck = detectConflict({ time, sunPosition: sun, heading: null, notes: '' });
+      return conflictCheck.flagConflict;
+    }
+
+    function stripSunBasedNavigation(text) {
+      return String(text || '')
+        .replace(/\b(use|using|follow|following)\s+the\s+sun[^.!?]*[.!?]?/gi, '')
+        .replace(/\bsun\s+(in|is in|to the|toward the)\s+(east|west)[^.!?]*[.!?]?/gi, '')
+        .replace(/\bbased on\s+sun[^.!?]*[.!?]?/gi, '')
+        .replace(/\brely on\s+sun\s+direction[^.!?]*[.!?]?/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function hasSevereWeatherSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return (
+        /\b(lightning|storm|thunderstorm|extreme weather|hail|tornado|hurricane|cyclone|relampago|raio|trovao|tempestade|temporal|clima extremo|granizo|furacao|ciclone|vento forte|vendaval)\b/.test(text)
+      );
+    }
+
+    function hasImmediateDangerSignal(notes) {
+      const notesLower = String(notes || '').toLowerCase();
+      return (
+        notesLower.includes('fire') ||
+        notesLower.includes('wildfire') ||
+        notesLower.includes('flood') ||
+        notesLower.includes('flash flood') ||
+        notesLower.includes('landslide') ||
+        notesLower.includes('rockfall') ||
+        notesLower.includes('gas leak') ||
+        notesLower.includes('toxic smoke') ||
+        hasSevereWeatherSignal(notesLower) ||
+        hasPredatorSignal(notesLower)
+      );
+    }
+
+    function hasRainSignal(notes) {
+      const notesLower = String(notes || '').toLowerCase();
+      return (
+        notesLower.includes('rain') ||
+        notesLower.includes('raining') ||
+        notesLower.includes('storm') ||
+        notesLower.includes('thunder') ||
+        notesLower.includes('chuva') ||
+        notesLower.includes('chovendo') ||
+        notesLower.includes('garoa') ||
+        notesLower.includes('tempestade') ||
+        notesLower.includes('temporal')
+      );
+    }
+
+    function hasFoodMentionSignal(notes) {
+      const text = String(notes || '').toLowerCase();
+      return (
+        text.includes('food') ||
+        text.includes('fruit') ||
+        text.includes('fruits') ||
+        text.includes('berry') ||
+        text.includes('berries') ||
+        text.includes('plant') ||
+        text.includes('plants') ||
+        text.includes('mushroom') ||
+        text.includes('mushrooms') ||
+        text.includes('eating') ||
+        text.includes('eat') ||
+        text.includes('edible') ||
+        text.includes('hunger') ||
+        text.includes('hungry') ||
+        text.includes('comida') ||
+        text.includes('alimento') ||
+        text.includes('fome') ||
+        text.includes('fruta') ||
+        text.includes('frutas') ||
+        text.includes('baga') ||
+        text.includes('bagas') ||
+        text.includes('planta') ||
+        text.includes('plantas') ||
+        text.includes('cogumelo') ||
+        text.includes('cogumelos') ||
+        text.includes('comer') ||
+        text.includes('meat') ||
+        text.includes('fish') ||
+        text.includes('hunt') ||
+        text.includes('hunting') ||
+        text.includes('pig') ||
+        text.includes('chicken') ||
+        text.includes('egg') ||
+        text.includes('carne') ||
+        text.includes('peixe') ||
+        text.includes('cacar') ||
+        text.includes('caÃ§ar') ||
+        text.includes('porco') ||
+        text.includes('galinha') ||
+        text.includes('ovo')
+      );
+    }
+
+    function hasKnownEdibleFoodSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return /\b(banana|bananas|coconut|coconuts|coco|mango|mangos|manga|mangas|apple|apples|maca|macas|orange|oranges|laranja|laranjas|papaya|mamao|mamoes|avocado|avocados|abacate|abacates|guava|guavas|goiaba|goiabas)\b/.test(text);
+    }
+
+    function hasScorpionSignal(notes) {
+      const text = String(notes || '').toLowerCase();
+      return (
+        text.includes('scorpion') ||
+        text.includes('scorpions') ||
+        text.includes('escorpiao') ||
+        text.includes('escorpioes') ||
+        text.includes('escorpi') ||
+        text.includes('venomous') ||
+        text.includes('peconhento') ||
+        text.includes('peconhenta')
+      );
+    }
+
+    function hasNoWaterSignal(notes) {
+      const text = normalizeSignalText(notes);
+      return (
+        text.includes('no water') ||
+        text.includes('without water') ||
+        text.includes('out of water') ||
+        text.includes('zero water') ||
+        text.includes('0 water') ||
+        text.includes('sem agua') ||
+        text.includes('acabou a agua') ||
+        text.includes('sem reserva de agua')
+      );
+    }
+
+    function getWaterReserveMl(notes) {
+      const text = String(notes || '').toLowerCase();
+      if (hasNoWaterSignal(text)) {
+        return 0;
+      }
+
+      const mlMatch = text.match(/\b(\d{1,4})\s?(ml|milliliter|milliliters|mililitro|mililitros)\b/);
+      if (mlMatch) {
+        return Number.parseInt(mlMatch[1], 10);
+      }
+
+      const literMatch = text.match(/\b(\d{1,2}(?:[.,]\d+)?)\s?(l|liter|liters|litre|litres|litro|litros)\b/);
+      if (literMatch) {
+        const liters = Number.parseFloat(literMatch[1].replace(',', '.'));
+        if (Number.isFinite(liters)) {
+          return Math.round(liters * 1000);
+        }
+      }
+
+      return null;
+    }
+
+    function hasCaveRiskSignal(notes) {
+      const notesLower = String(notes || '').toLowerCase();
+      const caveMentioned =
+        notesLower.includes('cave') ||
+        notesLower.includes('cavern') ||
+        notesLower.includes('caverna') ||
+        notesLower.includes('gruta');
+      if (!caveMentioned) return false;
+
+      return (
+        notesLower.includes('noise') ||
+        notesLower.includes('barulho') ||
+        notesLower.includes('som') ||
+        notesLower.includes('growl') ||
+        notesLower.includes('rugido') ||
+        notesLower.includes('tracks') ||
+        notesLower.includes('pegadas') ||
+        notesLower.includes('smell') ||
+        notesLower.includes('cheiro') ||
+        notesLower.includes('occupied') ||
+        notesLower.includes('ocupada') ||
+        notesLower.includes('animal inside') ||
+        notesLower.includes('animal dentro') ||
+        notesLower.includes('inside cave')
+      );
+    }
+
+    async function askAI() {
+      if (survivalBasicsActive) {
+        survivalBasicsActive = false;
+        sosBtn.textContent = 'Survival Basics';
+      }
+      setAIGuidanceLayout();
+      updateDirectionHint();
+      updateRiskLevel();
+
+      const time = timeInput.value.trim();
+      const sun = sunInput.value.trim();
+      const terrain = terrainInput.value.trim();
+      const battery = batteryInput.value.trim();
+      const notes = notesInput.value.trim();
+      const notedDirection = getDirectionFromNotes(notes);
+      const directionHint = directionHintEl.textContent;
+      const risk = riskLevelEl.textContent;
+      const terrainConflict = hasTerrainConflict(notes, terrain);
+      const remainingDaylight = getRemainingDaylight(time);
+      const notesLower = notes.toLowerCase();
+      const hasTent =
+        notesLower.includes('tent') ||
+        notesLower.includes('barraca');
+      const hasCave =
+        notesLower.includes('cave') ||
+        notesLower.includes('cavern') ||
+        notesLower.includes('caverna') ||
+        notesLower.includes('gruta');
+      const shelterAvailability = hasTent && hasCave ? 'tent and cave reported' : hasTent ? 'tent reported' : hasCave ? 'cave reported' : 'none reported';
+      const hasWater = hasWaterKeywordSignal(notesLower);
+      const nearbyWaterPriority = hasNearbyWaterPrioritySignal(notesLower);
+      const audibleWaterSignal = hasAudibleWaterSignal(notesLower);
+      const waterDistanceMeters = getWaterDistanceMeters(notesLower);
+      const waterReserveMl = getWaterReserveMl(notesLower);
+      const criticalLowWaterReserve = waterReserveMl !== null && waterReserveMl <= 250;
+      const noWaterSignal = hasNoWaterSignal(notesLower) || waterReserveMl === 0;
+      const severeWeatherSignal = hasSevereWeatherSignal(notesLower);
+      const waterAvailability = noWaterSignal
+        ? 'no water reported by user; source not confirmed'
+        : (nearbyWaterPriority || audibleWaterSignal)
+        ? `confirmed nearby water source${waterDistanceMeters !== null ? ` within ~${waterDistanceMeters}m` : ' within short distance'}`
+        : hasWater
+          ? 'possible water nearby'
+          : 'not reported';
+      const animalSignal = getAnimalSignal(notes);
+      const predatorSignal = hasPredatorSignal(notes);
+      const lionSignal = hasLionSignal(notes);
+      const directHumanActivitySignal = hasHumanActivitySignal(notes);
+      const domesticAnimalCivilizationSignal = hasDomesticAnimalCivilizationSignal(notes);
+      const humanActivitySignal = directHumanActivitySignal || domesticAnimalCivilizationSignal;
+      const humanActivityCue = humanActivitySignal
+        ? (directHumanActivitySignal ? getHumanActivityCue(notes) : getDomesticAnimalCivilizationCue(notes))
+        : 'none reported';
+      const defenseGear = getDefenseGearSignal(notes);
+      const defenseGearAvailability = defenseGear.summary;
+      const batteryPct = getBatteryNumber(battery);
+      const energySignal = batteryPct <= 20 ? 'low energy reserve' : batteryPct <= 40 ? 'moderate energy reserve' : 'good energy reserve';
+      const isNightOrLowVisibility = hasLowVisibilitySignal(time, sun, notes);
+      const coldSignal = hasColdSignal(notes);
+      const heatSignal = hasHeatSignal(notes);
+      const heavyClothingSignal = hasHeavyClothingSignal(notes);
+      const heatDehydrationRiskSignal = hasHeatDehydrationRiskSignal(notes);
+      const exhaustionSignal = hasExhaustionSignal(notes);
+      const rainSignal = hasRainSignal(notes);
+      const foodMentionSignal = hasFoodMentionSignal(notes);
+      const knownEdibleFoodSignal = hasKnownEdibleFoodSignal(notes);
+      const scorpionSignal = hasScorpionSignal(notes);
+      const heading = getHeadingFromNotes(notes);
+      const conflictCheck = detectConflict({ time, sunPosition: sun, heading, notes });
+      const conflictDetected = conflictCheck.flagConflict;
+      let removeSunDataFromPrompt = conflictCheck.removeSunDataFromPrompt;
+      let forceOrientationWarning = Boolean(conflictCheck.forceOrientationWarning);
+      if (conflictDetected) {
+        removeSunDataFromPrompt = true;
+        forceOrientationWarning = true;
+      }
+      const conflictIssues = conflictCheck.issues;
+      const conflictWarningLines = conflictCheck.warningLines;
+      setOrientationConflictAlert(conflictDetected);
+      const sunTimeConflict = hasSunTimeConflict(time, sun);
+      const sunValidationIssue = validateSun(time, sun);
+      const orientationStatusPromptBlock = forceOrientationWarning
+        ? `ORIENTATION STATUS: INCONSISTENT.
+The app detected unreliable sun/shadow, sun/light, or sun/time data.
+Orientation is unreliable.
+Do not use sun direction.
+Do not use compass direction for navigation.
+Do not give directional navigation based on sun.
+Use terrain, visible landmarks, route markers, short reversible movement, shelter, and confirmed water sources only.`
+        : '';
+      const orientationIssueList = conflictIssues.length > 0
+        ? conflictIssues.map((issue) => `- ${issue}`).join('\n')
+        : '- Sun position conflicts with description or time';
+      const orientationKillSwitchPromptBlock = forceOrientationWarning
+        ? `ORIENTATION KILL SWITCH (MANDATORY):
+Orientation data is inconsistent.
+- Do NOT use sun direction.
+- Do NOT use the sun for navigation.
+- Do NOT give directional navigation based on sun.
+- If sun position conflicts with light direction or shadow direction, keep sun excluded from navigation.
+- Explicitly state that orientation is unreliable.`
+        : '';
+      const orientationWarningPromptBlock = removeSunDataFromPrompt
+        ? `ORIENTATION WARNING:
+The user's light/sun/shadow information is inconsistent or unreliable.
+Do not use sun, shadow, or compass-derived direction for navigation.
+Prefer terrain, water flow, known landmarks, route markers, shelter, and short reversible movement.
+Mention uncertainty briefly but do not over-focus on it.`
+        : '';
+      const modelConflictWarning = forceOrientationWarning
+        ? `${orientationWarningPromptBlock ? `${orientationWarningPromptBlock}\n\n` : ''}${orientationStatusPromptBlock}
+
+The user's orientation inputs contain contradictions:
+${orientationIssueList}
+
+Treat orientation (sun/compass) as unreliable.
+Do NOT use the sun or compass for directional decisions.
+Do NOT give directional navigation based on sun.
+Explicitly state that orientation is unreliable.
+Fallback: rely on terrain, memory of your path, or visible landmarks.`
+        : '';
+      const conflictPromptWarning = modelConflictWarning;
+      const conflictIssueDetails = conflictWarningLines.length > 0
+        ? conflictWarningLines.join(' | ')
+        : conflictIssues.join(' | ');
+      const inputConsistencyAlert = conflictDetected
+        ? conflictIssueDetails
+        : sunValidationIssue
+          ? `Sun position may be inconsistent with time (${time}).`
+          : sunTimeConflict
+            ? 'Sun position conflicts with likely day/night cycle. Ignore sun direction and use realistic visibility/time.'
+            : 'none';
+      const reliableSunContext = removeSunDataFromPrompt
+        ? 'Sun position: unreliable due to orientation inconsistency. Do not use sun direction for navigation.'
+        : `Sun position: ${sun}`;
+      const navigationHintContext = forceOrientationWarning
+        ? 'Orientation unreliable; use landmarks and short reversible movement only.'
+        : directionHint;
+      const directionUsageRule = forceOrientationWarning
+        ? 'Orientation is inconsistent: do not use sun or compass direction in navigation sentences. Use landmarks and route markers instead.'
+        : 'Use direction in at least one navigation sentence.';
+      const directionCarryRule = forceOrientationWarning
+        ? 'If direction is uncertain, avoid anchoring on heading/bearing and prefer short reversible moves between visible landmarks.'
+        : 'If direction stated in notes is available, include that exact direction in NEXT 30 MINUTES.';
+      const emergencyMove = hasImmediateDangerSignal(notes);
+      const caveRiskSignal = hasCaveRiskSignal(notes);
+      const shelterSignal = hasTent || hasCave;
+      const strongSurvivalOpportunitySignal =
+        humanActivitySignal ||
+        domesticAnimalCivilizationSignal ||
+        nearbyWaterPriority ||
+        audibleWaterSignal;
+      const foodSafetyPromptBlock = foodMentionSignal
+        ? `FOOD CONTEXT RULES (CRITICAL):
+Only apply food rules if the user explicitly mentions:
+food, hunger, fruit, berries, plants, mushrooms, edible animals, eating, or food sources.
+UNKNOWN FOOD SAFETY:
+- Never assume unknown wild food is safe.
+- Always warn about uncertainty.
+- Avoid unknown berries.
+- Avoid mushrooms.
+- Avoid plants with milky sap.
+- Do not consume based only on appearance.
+- Do not consume wild animals without safe preparation and cooking.
+KNOWN EDIBLE UPGRADE:
+If specific known edible foods are mentioned (example: bananas):
+- Treat them as likely safe food sources.
+- Still require cautious inspection for rot, contamination, insects, or chemical exposure.
+- Do not treat all foods as unknown by default.
+You must include at least one explicit food caution in AVOID.`
+        : '';
+
+      const prompt = `You are a survival expert.
+${orientationWarningPromptBlock ? `${orientationWarningPromptBlock}\n` : ''}${forceOrientationWarning ? `${orientationStatusPromptBlock}\n` : ''}${forceOrientationWarning ? `${orientationKillSwitchPromptBlock}\n` : ''}CRITICAL:
+The "Extra notes" may override other fields.
+Notes can override form fields when they are physically consistent.
+If orientation cues conflict, treat orientation as unreliable and prefer neutral navigation cues.
+Prioritize energy conservation and practical decisions.
+Consider terrain, water proximity, and risk trade-offs.
+Prioritize signals of human activity over generic terrain heuristics.
+Consider time of day and remaining daylight before recommending movement.
+If user has shelter (tent or cave), evaluate whether staying is safer than moving.
+Weigh risks explicitly: moving vs staying, energy vs water, daylight vs safety.
+If rain is reported or likely soon, shelter and dryness become immediate top priority.
+Avoid generic advice.
+Do not give contradictory advice.
+If you advise MOVE NOW, it must be low-exertion and clearly safer than staying.
+DECISION CONSISTENCY RULE (MANDATORY):
+Give one primary decision only: MOVE NOW or STAY PUT.
+If MOVE NOW is selected, do not also recommend staying or shelter-first as a parallel instruction.
+Only use shelter as a conditional fallback trigger (example: if route becomes unsafe or direction is lost, then stop and shelter).
+Never recommend uphill climbing when conserving energy is a priority unless there is an immediate safety threat.
+You MUST use ALL of these inputs in your reasoning: shelter (tent/cave), water availability, terrain, direction, and time.
+You MUST use all provided information when relevant: terrain, water source, shelter options, movement direction, and battery.
+You MUST also use: animals observed, terrain difficulty, and energy cost vs benefit.
+You MUST make one clear decision: MOVE NOW or STAY PUT.
+FULL SIGNAL COVERAGE RULE (MANDATORY):
+You must analyze ALL user inputs.
+Do not ignore any relevant survival signal.
+LION OVERRIDE (CRITICAL):
+If notes explicitly mention lion/leao:
+- Treat it as immediate predator threat.
+- Mention "lion" explicitly in IMMEDIATE PRIORITY and AVOID.
+- Include at least one concrete distancing and anti-ambush instruction.
+If the user mentions food, hunger, fruits, plants, mushrooms, or edible animals, apply food safety rules and include food warnings.
+If the user mentions animals, evaluate threat and resource implications, then include a concrete caution.
+If the user mentions water availability or water amount, prioritize hydration decisions accordingly.
+If the user mentions direction or numeric bearing (example: 60 degrees), integrate it into navigation advice.
+If the user mentions defensive gear (bear spray, bear capsule, flamethrower, or similar), include how it changes risk management.
+ORIENTATION CONSISTENCY RULES:
+You are using user-provided survival inputs that may be incomplete or wrong.
+Before giving advice, softly check whether orientation signals are reliable.
+Check:
+- Sun position vs time of day.
+- Sun position vs user description.
+- Compass heading vs user description.
+- Rising/setting descriptions vs selected sun position.
+- Sun direction vs shadow direction (they cannot point to the same side).
+- Sun position vs reported light direction (example: sun behind, light hitting face from front).
+If orientation signals conflict:
+- Briefly mention that orientation may be unreliable.
+- Explicitly state orientation is unreliable.
+- Do NOT block the answer.
+- Do NOT blame the user.
+- Do NOT assume the user knows east/west.
+- Do NOT use the sun for navigation.
+- Avoid relying on sun direction for navigation.
+- Do NOT give directional navigation based on sun.
+- If orientation is uncertain:
+  - DO NOT use sun or compass for navigation
+  - Treat all direction-based data as unreliable
+- When inconsistencies are present:
+  - Prefer shelter, safety, and short movement over directional navigation
+- Prefer neutral guidance:
+  - visible landmarks
+  - shelter
+  - water sources
+  - route markers
+  - short staged movement
+  - reassessing often
+Example wording:
+"The orientation cues may be inconsistent, so avoid relying only on the sun or compass. Use visible landmarks and move in short stages."
+IMPORTANT:
+Even if there is a conflict, still give useful survival guidance.
+Keep the warning short and practical.
+SURVIVAL PRIORITY ORDER (MANDATORY):
+1. Immediate danger (predators, injury, weather, venomous animals)
+2. Shelter
+3. Water
+4. Rescue opportunities (human-made sounds/signals)
+5. Navigation
+6. Food
+Always reflect this order in your decision and action sequence.
+VISIBILITY RULE:
+Cloudy conditions do NOT equal low visibility.
+Only restrict movement for visibility when:
+- It is night or dense darkness.
+- Heavy/dense fog is present.
+- Notes explicitly report no visibility.
+If none of these apply, cautious short movement is allowed.
+NIGHT MOVEMENT RULE (CRITICAL):
+If it is night:
+- Avoid long-distance movement unless there is a clear and safe objective nearby.
+- Prioritize shelter and wait for daylight.
+- Only move if survival risk of staying is higher than moving.
+LIGHT RULE (CRITICAL):
+Do not assume artificial light unless it is explicitly mentioned as artificial/electric/device-based light.
+Natural sunlight/daylight/sunrise/sunset descriptions are natural cues and must never be reclassified as artificial light.
+If a light source is mentioned without explicit artificial origin, describe it as unconfirmed and avoid treating it as a guaranteed artificial rescue source.
+ARTIFICIAL LIGHT DECISION RULE:
+If artificial light is detected:
+- Treat it as a potential rescue cue.
+- Prioritize open visibility and active signaling first.
+- Evaluate distance and route safety before movement.
+- If nearby and clearly reachable, approach cautiously in short stages.
+- If far, intermittent, or unclear, hold a safe position, signal, and wait for better confirmation/daylight.
+WATER PRIORITY RULE:
+If water is visible/reported and within short distance:
+- Strongly consider reaching it safely.
+- Evaluate terrain and descent risk before moving.
+- Prefer short, controlled movement to secure water.
+- Return to shelter if needed after collecting water.
+Water is a critical survival resource after immediate life safety.
+NO WATER OVERRIDE (CRITICAL):
+If the user reports no water / without water / out of water:
+- Treat this as top operational priority after immediate life danger.
+- Prioritize locating water or civilization with controlled low-exertion movement.
+- Explicitly mention the no-water condition in IMMEDIATE PRIORITY.
+- Never ignore this condition.
+WATER GROUNDING RULE (CRITICAL):
+If the user explicitly says "no water":
+- Do NOT suggest that a water source exists.
+- Do NOT infer rivers or streams.
+- Only suggest searching for signs of water.
+RISK PRIORITY RULE (CRITICAL):
+Lightning, storms, or extreme weather override navigation decisions.
+In such cases:
+- Prioritize shelter immediately.
+- Avoid open areas and high ground.
+- Delay navigation decisions until safer conditions.
+AUDIBLE WATER RULE:
+If the user hears water (waterfall, river, stream, running water):
+- Treat this as a strong survival opportunity.
+- Prioritize locating the source with cautious staged movement.
+- Use downhill terrain as guidance when safe.
+- Explicitly include the water sound cue in your decision.
+PREDATOR + WATER RULE (CRITICAL):
+If predator signs are present near a water source (visible, nearby, or audible):
+- Do not approach water directly.
+- Observe from distance and wait if possible.
+- Consider alternative water sources first.
+- Prioritize safety over speed.
+LOW WATER RESERVE RULE:
+If carried water is reported at 250 ml or less:
+- Treat hydration as urgent.
+- If movement is unsafe now, stay temporarily but prepare to move at first safer window to secure water.
+- Do not delay water planning.
+EMERGENCY WATER QUALITY RULE:
+If only muddy or unsafe water is available:
+- Treat it as emergency-only hydration with caution.
+- Avoid use when strong contamination is visible (chemical smell, oily sheen, heavy waste, carcass runoff).
+- Prioritize safer water sources whenever possible.
+SHELTER PRIORITY RULE (CRITICAL):
+If the user has shelter (tent, cave, stable refuge):
+- Treat it as immediate protection and recovery point.
+- Evaluate safety before entering enclosed shelter, especially caves.
+- Strongly prioritize using it before long movement when tired/exhausted.
+- Protect from cold and wildlife.
+- Conserve energy and water.
+RAIN PRIORITY RULE:
+If rain is reported, incoming, or likely soon:
+- Prioritize immediate shelter and keeping dry.
+- Assume terrain may worsen (slippery ground, slower movement, higher fall risk).
+- Increase cold exposure risk and insulation urgency.
+- Avoid long movement until shelter/warmth is secured unless immediate danger forces relocation.
+CAVE SAFETY RULE:
+If a cave or enclosed shelter is mentioned:
+- Do NOT enter immediately.
+- Inspect from distance before approach.
+- Check for signs of animals (noise, tracks, smell, fresh waste).
+- Approach cautiously and keep a clear exit path.
+- If unsafe or uncertain, stay near entrance or choose alternative shelter.
+CAVE INTELLIGENCE RULE (CRITICAL):
+If a cave is present:
+- Treat it as potential shelter and a potential water source clue.
+- Check for animal signs before entering.
+- If water sound is detected near/inside, prioritize safe inspection from distance before entry.
+- Keep a clear exit path at all times.
+COLD CONDITION:
+If cold is mentioned:
+- Prioritize warmth and insulation.
+- Avoid unnecessary movement.
+- Consider safe fire use for warmth when conditions allow.
+COLD SWEAT RULE (CRITICAL):
+If the user reports sweating in cold conditions:
+- Warn about accelerated heat loss and hypothermia risk.
+- Recommend staying dry immediately and preserving insulation layers.
+- Prioritize wind/rain protection before further movement.
+EXHAUSTION RULE (CRITICAL):
+If the user reports fatigue, shaking, weakness, or exhaustion:
+- Reduce movement immediately.
+- Prioritize rest, shelter, warmth, and hydration.
+- Avoid long-distance travel; only short controlled moves if immediate safety or rescue signaling requires it.
+INPUT VALIDATION:
+If inputs are inconsistent (for example sun position at night):
+- Ignore invalid data.
+- Base reasoning on realistic conditions and high-confidence signals.
+- Never force movement from contradictory data.
+- Prefer shelter, safety, and short movement over directional navigation.
+${conflictPromptWarning}
+NO ASSUMPTIONS / NO HALLUCINATION RULE (CRITICAL):
+Do not introduce elements not mentioned by the user (example: rivers).
+Base all guidance strictly on provided inputs and explicit signals.
+Do not invent rivers, valleys, helicopters, artificial lights, civilization, or rescuers unless explicitly mentioned.
+Use "if present" or "look for signs of..." for uncertain elements not explicitly confirmed by the user.
+RIVER CONSISTENCY:
+- Do not infer a river from downhill terrain alone.
+- Mention a river only when river evidence exists in notes/signals.
+TERRAIN RULE (CRITICAL):
+Do not assume water exists based on downhill terrain alone.
+Only mention water sources if explicitly reported or clearly evidenced.
+WATER SOURCE RULE:
+Do not invent a river, stream, creek, lake, waterfall, or water source.
+Only mention a specific water source if the user explicitly reports it.
+If no water source is reported, say "look for signs of water" instead of saying a river exists.
+RESCUE PRIORITY RULE (CRITICAL):
+HIGHEST PRIORITY RULE:
+If any rescue signal is present (helicopter, aircraft, voices, lights),
+immediately prioritize signaling and visibility over movement or navigation.
+If any rescue cue is detected (helicopter, aircraft, distant light, human activity, voices, engines, machines, smoke, tracks, domestic animals):
+- Prioritize visibility and signaling over long movement.
+- Move only to the nearest safer open line-of-sight area when needed.
+- Signal using light, movement, sound, reflective gear, or controlled fire when safe.
+- Do not abandon your current position immediately unless staying there is unsafe.
+RESCUE KEYWORD TRIGGER (MANDATORY):
+If notes include any of these words: helicopter, aircraft, rescue, human voices.
+- Activate: "Rescue Opportunity Detected".
+- Put this exact phrase in IMMEDIATE PRIORITY.
+- Then apply HIGHEST PRIORITY RULE immediately.
+HUMAN SIGNAL PRIORITY:
+If any sign of human activity is detected (tools, voices, machines, chainsaw, hammer, engine, smoke, lights, tracks, domestic animals):
+- Treat it as a potential rescue opportunity.
+- First secure open visibility/signaling position.
+- Only then consider cautious staged movement toward the source if it is nearby and the route remains clearly safe.
+- Explain safe approach steps (short move, pause, listen, mark route, reassess).
+- This priority is ABOVE terrain-only navigation.
+If notes indicate a specific human-made sound, explicitly mention it and use it in the decision.
+DOMESTIC ANIMAL CIVILIZATION RULE:
+If notes mention domestic animals (chickens, pigs, livestock):
+- Treat as a strong indicator of nearby humans.
+- Prioritize cautious movement toward this area when route risk is acceptable.
+- Mention this signal explicitly in IMMEDIATE PRIORITY or NEXT 30 MINUTES.
+DOMESTIC ANIMAL RESOURCE RULE:
+If chickens/pigs/livestock are reported:
+- Treat as both civilization clue and potential food/resource clue.
+- Do not chase animals into dense or low-visibility terrain.
+DENSE FOREST MOVEMENT RULE:
+If terrain is dense forest and movement is recommended:
+- Use short micro-stages with route markers.
+- Prefer edges, clear corridors, and line-of-sight anchors over blind thickets.
+- Reassess direction and safety every 1-2 minutes.
+HEAT AND CLOTHING RULE:
+If hot conditions or heavy clothing are reported:
+- Recommend reducing heat exposure immediately (shade, pace control, layer reduction).
+- Prioritize hydration planning and water access.
+- Treat heat + heavy clothing as elevated dehydration risk.
+DYNAMIC DECISION RULE (MANDATORY):
+Do NOT default blindly to "STAY PUT" or "MOVE NOW".
+If there are strong survival opportunities (water, civilization signs, rescue signals):
+- Prefer cautious movement OR visibility-first signaling based on RESCUE PRIORITY, EXHAUSTION, and route safety.
+- Keep movement short, controlled, and reassessed frequently.
+If notes mention a cave, apply CAVE INTELLIGENCE RULE before treating it as shelter or water source.
+If notes mention a river, do not rename it as lake.
+If notes mention a direction (north/south/east/west) or bearing in degrees, use it in navigation advice.
+If animals are observed, evaluate both possibilities: threat and possible resource/water clue.
+If scorpions or venomous animals are observed, include sting/bite prevention steps.
+PREDATOR OVERRIDE (CRITICAL):
+If predator signs are present (lion/leao, jaguar/onca, big cat, fresh tracks, growls), prioritize immediate safety over generic navigation.
+Never ignore predator information. Explicitly mention the predator in IMMEDIATE PRIORITY and AVOID.
+Keep distance and visibility, avoid dense vegetation, and avoid narrow/closed trails with ambush risk.
+If both predator risk and human-made signal exist, move away from predator area first, then orient cautiously toward the human signal in open terrain.
+Do not suggest moving into dense vegetation when predator risk is present unless immediate danger behind forces it.
+DEFENSIVE GEAR RULE (MANDATORY):
+If defensive gear is reported (bear spray, bear capsule, flamethrower, similar):
+- Integrate it into strategy and risk level.
+- Treat gear as backup defense only, not confrontation.
+- Include one concrete instruction for safe readiness and disengagement.
+WEAPON CONTROL RULE (CRITICAL):
+Do not encourage aggressive use of weapons.
+Do not suggest proactive weapon use, hunting, chasing, or confrontation.
+Only mention defensive use as a last resort for disengagement and survival.
+BATTERY MODE RULE (CRITICAL):
+If battery is below 20%:
+- Switch to emergency battery mode immediately.
+- Stop non-essential phone usage now.
+- Perform one final orientation check, then keep device off/locked between emergency-only checks.
+- Rely on memory and physical route markers between checks.
+If battery is above 50%:
+- Use normal conservation only.
+- Keep airplane mode enabled between checks and avoid unnecessary screen-on time.
+Avoid vague phrases like "remain visible"; specify visible to rescuers/signaling line-of-sight.
+Do not use generic phrases like "remain visible to rescuers" unless there is a concrete rescue mechanism in this scenario.
+Do not provide food-foraging advice unless food is explicitly mentioned in notes.
+${foodSafetyPromptBlock}
+
+The user may be stressed, tired, cold, or confused.
+Respond with calm, practical, short instructions.
+Do not use markdown.
+Do not use bullet symbols like ** or ##.
+Use simple language.
+Be decisive.
+
+User situation:
+Time: ${time}
+${reliableSunContext}
+Terrain field: ${terrain}
+Battery: ${battery}
+Notes: ${notes}
+Shelter signals (tent/cave): ${shelterAvailability}
+Water availability signal: ${waterAvailability}
+Animal signal: ${animalSignal}
+Predator signal: ${predatorSignal ? 'reported' : 'not reported'}
+Lion-specific signal: ${lionSignal ? 'reported' : 'not reported'}
+Human activity signal: ${humanActivitySignal ? `reported (${humanActivityCue})` : 'not reported'}
+Defensive gear signal: ${defenseGearAvailability}
+Energy signal: ${energySignal}
+Exhaustion signal (fatigue/shaking/exhaustion): ${exhaustionSignal ? 'reported' : 'not reported'}
+Remaining daylight estimate: ${remainingDaylight}
+Direction stated in notes: ${notedDirection || 'none'}
+Heading extracted from notes (degrees): ${heading !== null ? heading : 'not reported'}
+Navigation hint: ${navigationHintContext}
+Risk level: ${risk}
+Night or low-visibility signal: ${isNightOrLowVisibility ? 'yes' : 'no'}
+Nearby water priority signal: ${nearbyWaterPriority ? 'yes' : 'no'}
+Audible water signal: ${audibleWaterSignal ? 'reported' : 'not reported'}
+Estimated nearest water distance (if reported): ${waterDistanceMeters !== null ? `${waterDistanceMeters} meters` : 'not reported'}
+Reported carried water estimate: ${waterReserveMl !== null ? `${waterReserveMl} ml` : 'not reported'}
+Critical low-water reserve signal (<=250 ml): ${criticalLowWaterReserve ? 'yes' : 'no'}
+No-water signal (0 or explicitly none): ${noWaterSignal ? 'reported' : 'not reported'}
+Food mention signal: ${foodMentionSignal ? 'yes' : 'no'}
+Known edible food signal: ${knownEdibleFoodSignal ? 'reported' : 'not reported'}
+Scorpion/venom signal: ${scorpionSignal ? 'reported' : 'not reported'}
+Cold signal: ${coldSignal ? 'reported' : 'not reported'}
+Heat signal: ${heatSignal ? 'reported' : 'not reported'}
+Heavy clothing signal: ${heavyClothingSignal ? 'reported' : 'not reported'}
+Heat-dehydration combined risk: ${heatDehydrationRiskSignal ? 'reported' : 'not reported'}
+Rain signal: ${rainSignal ? 'reported' : 'not reported'}
+Severe weather signal (lightning/storm/extreme weather): ${severeWeatherSignal ? 'reported' : 'not reported'}
+Domestic animal civilization signal: ${domesticAnimalCivilizationSignal ? `reported (${getDomesticAnimalCivilizationCue(notes)})` : 'not reported'}
+Strong survival opportunity signal: ${strongSurvivalOpportunitySignal ? 'yes' : 'no'}
+Immediate danger forcing movement: ${emergencyMove ? 'possible' : 'not reported'}
+Cave risk signal (noise/tracks/smell/occupancy): ${caveRiskSignal ? 'reported' : 'not reported'}
+Battery emergency signal (<20%): ${batteryPct < 20 ? 'yes' : 'no'}
+Input consistency alert: ${inputConsistencyAlert}
+Pre-model physical consistency flag: ${conflictDetected ? 'yes' : 'no'}
+Pre-model inconsistency warning: ${modelConflictWarning || 'none'}
+${terrainConflict ? 'Potential contradiction: terrain field says downhill, but notes may indicate uphill movement.' : ''}
+
+Analyze contradictions carefully.
+If battery is low, provide concrete battery-saving actions.
+If suggesting climbing or higher ground, explain the trade-off in one short sentence.
+Risk level must reflect time of day, weather/rain, water availability, terrain difficulty, and energy level.
+${directionUsageRule}
+If no water is visible, suggest a cautious low-energy water search strategy.
+If no-water signal is reported, do not state that a water source exists; only suggest searching for signs of water.
+Do not default to STAY PUT when strong survival opportunity signal is present, unless RESCUE PRIORITY or EXHAUSTION/SHELTER conditions make staying/signaling safer.
+If strong survival opportunity signal is yes, prefer cautious movement or open-area signaling based on route safety, rescue visibility, and exhaustion.
+If nearby water priority signal is true, explicitly assess whether descent is manageable and prefer securing water with a controlled round trip.
+If audible water signal is reported, prioritize movement toward the sound source with controlled downhill guidance when safe.
+If shelter signal is present, explicitly use shelter in IMMEDIATE PRIORITY.
+Never invent a river when river evidence is absent.
+If food mention signal is yes, include at least one explicit food warning in AVOID.
+If known edible food signal is reported, treat it as likely safe food source with cautious inspection; do not classify all foods as unknown by default.
+If animal signal is not none reported, include at least one explicit animal-related caution.
+If predator signal is reported, include explicit predator safety in IMMEDIATE PRIORITY and AVOID.
+If predator signal is reported and (nearby water priority signal or audible water signal) is true, apply PREDATOR + WATER RULE explicitly.
+If lion-specific signal is reported, explicitly use the word "lion" at least once.
+If human activity signal is reported, apply RESCUE PRIORITY: visibility/signaling first; only include cautious staged approach when nearby and clearly safe.
+If domestic animal civilization signal is reported, treat it as nearby human presence and prioritize cautious approach.
+If domestic animal civilization signal is reported, also include resource awareness (possible food/resource clue) without unsafe pursuit.
+If heat signal or heavy clothing signal is reported, include explicit cooling and hydration actions.
+If exhaustion signal is reported, reduce movement immediately, prioritize shelter/rest, and avoid long-distance travel.
+If defensive gear signal is not none reported, include one concrete gear usage constraint (backup defense only).
+${directionCarryRule}
+If no-water signal is reported, explicitly prioritize water/civilization access and do not omit hydration urgency.
+If severe weather signal is reported, apply RISK PRIORITY RULE and delay navigation decisions.
+If battery emergency signal (<20%) is yes, BATTERY STRATEGY must include immediate emergency battery mode with near-zero screen usage.
+If movement is chosen in dense forest, include one visibility-preserving route instruction.
+
+Respond EXACTLY in this format:
+Do NOT repeat sections.
+Each section must appear only once.
+Do NOT include a heading inside another section.
+
+IMMEDIATE PRIORITY:
+Write 2 to 4 short sentences.
+Start with: CRITICAL:
+Include explicit decision in first sentence: "Decision: MOVE NOW..." or "Decision: STAY PUT...".
+If RESCUE KEYWORD TRIGGER is active, include this exact phrase: "Rescue Opportunity Detected".
+
+NEXT 30 MINUTES:
+Write 2 to 4 short sentences.
+Start with: IMPORTANT:
+If a river exists, explain safe river use and whether to follow it downhill.
+
+AVOID:
+Write 2 to 4 short sentences.
+Start with: IMPORTANT:
+
+BATTERY STRATEGY:
+Write 2 to 4 short sentences.
+Start with: CRITICAL: if battery < 20, OPTIONAL: if battery > 50, otherwise IMPORTANT:.
+If battery is above 50, include one concrete recommendation for active navigation/checking landmarks while preserving reserve.`;
+
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = 'Analyzing situation...';
+      statusEl.textContent = terrainConflict || conflictDetected || sunTimeConflict
+        ? 'Input inconsistency detected. Sending safety-focused prompt to local Gemma...'
+        : 'Sending safety-focused prompt to local Gemma...';
+      resetOutputsLoading();
+
+      try {
+        const response = await fetch('http://localhost:11434/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'gemma:7b',
+            prompt,
+            stream: false
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const parsed = parseStructuredResponse(data.response || '');
+        const hybrid = applyHybridGuidance(parsed, {
+          battery: getBatteryNumber(battery),
+          terrain,
+          notes,
+          risk,
+          isNightOrLowVisibility,
+          coldSignal,
+          hasShelter: shelterSignal,
+          emergencyMove,
+          foodMentionSignal,
+          knownEdibleFoodSignal,
+          notedDirection,
+          scorpionSignal,
+          noWaterSignal,
+          waterReserveMl,
+          animalSignal,
+          predatorSignal,
+          lionSignal,
+          directHumanActivitySignal,
+          humanActivitySignal,
+          humanActivityCue,
+          domesticAnimalCivilizationSignal,
+          audibleWaterSignal,
+          heatSignal,
+          heavyClothingSignal,
+          heatDehydrationRiskSignal,
+          severeWeatherSignal,
+          defenseGear,
+          orientationUnreliable: forceOrientationWarning
+        });
+        const waterRuleApplied = enforceWaterSourceRule(hybrid, notes);
+        setOutputs(waterRuleApplied);
+        statusEl.textContent = 'Analysis completed.';
+      } catch (error) {
+        immediateOutput.textContent = 'Could not connect to local Ollama/Gemma.';
+        nextOutput.textContent = 'Check if Ollama is open.';
+        avoidOutput.textContent = 'Confirm the model is available.';
+        batteryOutput.textContent = `Technical detail: ${error.message}`;
+        statusEl.textContent = 'Connection error.';
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = 'Analyze Situation';
+      }
+    }
+
+    analyzeBtn.addEventListener('click', askAI);
+    demoBtn.addEventListener('click', loadDemoData);
+    sosBtn.addEventListener('click', toggleSOS);
+    immediateTitleEl.addEventListener('click', () => showSurvivalBasics('water'));
+    nextTitleEl.addEventListener('click', () => showSurvivalBasics('shelter'));
+    avoidTitleEl.addEventListener('click', () => showSurvivalBasics('food'));
+    batteryTitleEl.addEventListener('click', () => showSurvivalBasics('navigation'));
+    timeFormatToggle.addEventListener('change', () => {
+      normalizeTimeInputFormat();
+      updateRiskLevel();
+    });
+    timeInput.addEventListener('blur', normalizeTimeInputFormat);
+
+    document.querySelectorAll('[data-scenario]').forEach(btn => {
+      btn.addEventListener('click', () => setScenario(btn.dataset.scenario));
+    });
+
+    [timeInput, sunInput, terrainInput, batteryInput, notesInput].forEach(el => {
+      el.addEventListener('input', () => {
+        updateDirectionHint();
+        updateRiskLevel();
+      });
+      el.addEventListener('change', () => {
+        updateDirectionHint();
+        updateRiskLevel();
+      });
+    });
+
+    updateDirectionHint();
+    normalizeTimeInputFormat();
+    updateRiskLevel();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
